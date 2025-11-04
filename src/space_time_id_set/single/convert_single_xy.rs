@@ -1,35 +1,39 @@
-use crate::r#type::bit_vec::BitVec;
+pub fn convert_xy(z: u8, dimension: [u64; 2]) -> Vec<(u8, u64)> {
+    let mut current_range = Some(dimension);
+    let mut now_z = z;
+    let mut result = Vec::new();
 
-pub fn convert_bitmask_f(z: u8, f: i64) -> (BitVec, u8) {
-    let length = ((z * 2 / 8) + 1) as usize;
-    let mut result = vec![0u8; length];
-
-    // 符号を保存するためにfの絶対値を使用
-    let is_negative = f < 0;
-    let mut f_abs = f.abs();
-
-    // 最初の階層(z=0)の処理 - 符号を格納
-    result[0] |= 1 << 7; // 有効ビット
-    if is_negative {
-        result[0] |= 1 << 6; // 分岐ビット（負の場合）
-    }
-
-    // それ以降の階層では各ビットを順に格納
-    for now_z in 1..=z {
-        let index = ((now_z) * 2 / 8) as usize;
-        let in_index = now_z % 4;
-
-        // 有効ビット
-        result[index] |= 1 << (7 - in_index * 2);
-
-        // 分岐ビット - f_absの最下位ビットを使用
-        if f_abs % 2 != 0 {
-            result[index] |= 1 << (6 - in_index * 2);
+    while let Some(mut target) = current_range {
+        if target[0] == target[1] {
+            // 終端 → これ以上分割しない
+            result.push((now_z, target[0]));
+            break;
         }
 
-        f_abs >>= 1; // 次のビットへ
+        // 左端が奇数なら個別に処理
+        if target[0] % 2 != 0 {
+            result.push((now_z, target[0]));
+            target[0] += 1;
+        }
+
+        // 右端が偶数なら個別に処理
+        if target[1] % 2 == 0 {
+            result.push((now_z, target[1]));
+            target[1] -= 1;
+        }
+
+        // 範囲が逆転したら終了
+        if target[0] > target[1] {
+            break;
+        }
+
+        // 次のズームレベルへ（範囲を半分に縮小）
+        current_range = Some([target[0] / 2, target[1] / 2]);
+        if now_z == 0 {
+            break; // z=0で終了
+        }
+        now_z -= 1;
     }
 
-    let result = BitVec::from_vec(result);
-    (result, z)
+    result
 }

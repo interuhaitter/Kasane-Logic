@@ -1,6 +1,6 @@
 use crate::r#type::bit_vec::BitVec;
 
-pub fn invert_bitmask_f(bitmask: &BitVec) -> (i64, u8) {
+pub fn invert_bitmask_f(bitmask: &BitVec) -> (u8, i64) {
     let bytes = &bitmask.0;
     let total_bits = bytes.len() * 8;
     let total_layers = (total_bits + 1) / 2;
@@ -36,5 +36,5 @@ pub fn invert_bitmask_f(bitmask: &BitVec) -> (i64, u8) {
         f = -f;
     }
 
-    (f, max_z as u8)
+    (max_z as u8, f)
 }

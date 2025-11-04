@@ -1,45 +1,33 @@
 use core::fmt;
 use serde::Serialize;
-pub mod dimension;
+pub mod format;
+pub mod random;
 pub mod z_range;
 
 use crate::{
     error::Error,
-    space_time_id::{
-        dimension::Dimension,
-        z_range::{F_MAX, F_MIN, XY_MAX},
-    },
+    space_time_id::z_range::{F_MAX, F_MIN, XY_MAX},
 };
-
-impl fmt::Display for SpaceTimeId {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}/{}/{}/{}_{}/{}",
-            self.z, self.f, self.x, self.y, self.i, self.t
-        )
-    }
-}
 
 #[derive(Serialize, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SpaceTimeId {
     pub z: u8,
-    pub f: Dimension<i64>,
-    pub x: Dimension<u64>,
-    pub y: Dimension<u64>,
+    pub f: [i64; 2],
+    pub x: [u64; 2],
+    pub y: [u64; 2],
     pub i: u32,
-    pub t: Dimension<u32>,
+    pub t: [u64; 2],
 }
 
 impl SpaceTimeId {
     /// 値の範囲を確認・正規化する
     pub fn new(
         z: u8,
-        f: Dimension<i64>,
-        x: Dimension<u64>,
-        y: Dimension<u64>,
+        f: [Option<i64>; 2],
+        x: [Option<u64>; 2],
+        y: [Option<u64>; 2],
         i: u32,
-        t: Dimension<u32>,
+        t: [Option<u32>; 2],
     ) -> Result<Self, Error> {
         if z > 60 {
             return Err(Error::ZoomLevelOutOfRange { zoom_level: z });
@@ -49,12 +37,14 @@ impl SpaceTimeId {
         let f_min = F_MIN[z as usize];
         let xy_max = XY_MAX[z as usize];
 
-        // 各軸の正規化
+        // 空間の次元を全て値に変換
         let new_f = normalize_dimension(f, f_min, f_max, valid_range_f, z)?;
         let new_x = normalize_dimension(x, 0, xy_max, valid_range_x, z)?;
         let new_y = normalize_dimension(y, 0, xy_max, valid_range_y, z)?;
 
-        let new_t: Dimension<u32> = Dimension::new(t.start, t.end);
+        //時間軸の順番を入れ替え
+        //Todo時間に関する処理を行う
+        //いったん、3次元の処理を優先的に行う
 
         Ok(SpaceTimeId {
             z,
@@ -62,30 +52,47 @@ impl SpaceTimeId {
             x: new_x,
             y: new_y,
             i,
-            t: new_t,
+            t: [0, u64::MAX],
         })
     }
 }
 
 ///次元の値が正しいかを判定するパッチ関数
 fn normalize_dimension<T>(
-    dim: Dimension<T>,
+    dim: [Option<T>; 2],
     min: T,
     max: T,
     validate: impl Fn(T, T, T, u8) -> Result<(), Error>,
     z: u8,
-) -> Result<Dimension<T>, Error>
+) -> Result<[T; 2], Error>
 where
     T: PartialOrd + Copy,
 {
-    if let Some(s) = dim.start {
+    //値が範囲内なのかをチェックする
+    if let Some(s) = dim[0] {
         validate(s, min, max, z)?;
     }
-    if let Some(e) = dim.end {
+    if let Some(e) = dim[1] {
         validate(e, min, max, z)?;
     }
 
-    Ok(Dimension::new(dim.start, dim.end))
+    //値を変換して代入する
+    let start = match dim[0] {
+        Some(v) => v,
+        None => min,
+    };
+
+    let end = match dim[1] {
+        Some(v) => v,
+        None => max,
+    };
+
+    //順序を正しくする
+    if end > start {
+        Ok([start, end])
+    } else {
+        Ok([end, start])
+    }
 }
 
 ///Fの範囲が正しいかを確認する
