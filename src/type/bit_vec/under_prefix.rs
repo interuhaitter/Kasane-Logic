@@ -7,21 +7,21 @@ impl BitVec {
 
         // 逆順でミュータブル参照を回す
         'outer: for byte in copy.iter_mut().rev() {
-            for i in 0..3 {
+            for i in 0..=3 {
                 let mask: u8 = 0b00000011 << (i * 2);
 
                 if *byte & mask == 0 {
-                    println!("無効な階層");
+                    //無効な階層
                     continue;
                 } else {
-                    // 有効桁
+                    // 有効な階層
                     if (*byte & mask) == (0b00000010 << (i * 2)) {
                         // 分岐Bitが0の場合 → 1にする
                         *byte = *byte | 0b00000011 << (i * 2);
                         break 'outer;
                     } else {
                         // 分岐Bitが1の場合 → 0にする
-                        *byte = *byte | 0b00000010 << (i * 2);
+                        *byte ^= 0b00000001 << (i * 2);
                     }
                 }
             }
