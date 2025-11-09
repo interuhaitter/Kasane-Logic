@@ -13,6 +13,12 @@ impl BitVec {
                 if masked != 0 {
                     // 該当ビットを消去
                     *last = *last & !mask;
+
+                    //もし最後のu8が空の場合はu8をVecから削除
+                    if *last == 0 {
+                        self.0.pop();
+                    }
+
                     break;
                 }
             }
