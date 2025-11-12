@@ -56,13 +56,9 @@ impl SpaceTimeIdSet {
             // ---- A軸を処理 ----
             for (i, (_, bit_a)) in other_encoded[0].iter().enumerate() {
                 if let Some(a_v) = other_encoded_copy[0][i].as_mut() {
-                    println!("bit_a{}", bit_a);
-                    println!("target_a{}", target_a);
                     let relation = Self::check_relation(bit_a, target_a);
 
                     if relation == Relation::Disjoint {
-                        println!("a_disjoint");
-
                         // 論理削除しつつ a_v を取り出す
                         let removed = other_encoded_copy[0][i].take().unwrap();
 
@@ -80,19 +76,13 @@ impl SpaceTimeIdSet {
             // ---- B軸を処理 ----
             for (i, (_, bit_b)) in other_encoded[1].iter().enumerate() {
                 if let Some(b_v) = other_encoded_copy[1][i].as_mut() {
-                    println!("bit_b{}", bit_b);
-                    println!("target_b{}", target_b);
-
                     let relation = Self::check_relation(bit_b, target_b);
 
                     if relation == Relation::Disjoint {
-                        println!("b_disjoint");
-
                         let removed = other_encoded_copy[1][i].take().unwrap();
 
                         for a_opt in &other_encoded_copy[0] {
                             if let Some(a_v) = a_opt.as_ref() {
-                                println!("ここで挿入されている");
                                 self.uncheck_insert(main_bit, &a_v.1, &removed.1);
                             }
                         }
@@ -101,11 +91,6 @@ impl SpaceTimeIdSet {
                     }
                 }
             }
-
-            println!("a_relation:{:?}", a_relations);
-            println!("b_relation:{:?}", b_relations);
-
-            println!("{:?}", other_encoded_copy);
 
             // ---- メイン軸を含めた結合処理 ----
             for (ai, a_rel) in &a_relations {

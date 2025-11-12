@@ -31,9 +31,16 @@ pub fn invert_bitmask_f(bitmask: &BitVec) -> (u8, i64) {
         }
     }
 
-    // 符号を適用
     if is_negative {
-        f = -f;
+        if max_z <= 0 {
+            // max_z が 0 の場合も汎用計算
+            f = -(1 << 0); // -1
+        } else if f == 0 {
+            // max_z > 0 で下位ビットが全て 0 の場合
+            f = -(1 << (max_z));
+        } else {
+            f = -f;
+        }
     }
 
     (max_z as u8, f)

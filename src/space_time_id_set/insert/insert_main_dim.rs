@@ -35,12 +35,9 @@ impl SpaceTimeIdSet {
         other_encoded: &[&Vec<(usize, BitVec)>; 2],
         main_dim_select: MainDimensionSelect,
     ) {
-        println!("代表次元：{:?}", main_dim_select);
         //代表次元における上位範囲を収拾する
 
         let main_top = Self::collect_top(&self, main_bit, &main_dim_select);
-
-        println!("{:?}", main_top);
 
         //代表次元において、上位も下位も存在しなかった場合
         if main_top.is_empty() && *main_under_count == 0 {

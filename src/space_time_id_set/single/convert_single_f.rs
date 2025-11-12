@@ -1,6 +1,5 @@
 pub fn convert_f(z: u8, dimension: [i64; 2]) -> Vec<(u8, i64)> {
     if (dimension[0] >= 0 && dimension[1] >= 0) || (dimension[0] < 0 && dimension[1] < 0) {
-        // 上下どちらかにある場合
         return convert_f_logic(z, dimension);
     } else {
         let mut result = vec![];
@@ -33,12 +32,13 @@ fn convert_f_logic(z: u8, dimension: [i64; 2]) -> Vec<(u8, i64)> {
             // 二つをまとめられるかを判定する
             if target[0] % 2 == 0 {
                 // まとめられる
-                result.push((now_z - 1, target[0] / 2))
+                result.push((now_z - 1, (target[0] / 2)))
             } else {
                 // まとめられない
                 result.push((now_z, target[0]));
                 result.push((now_z, target[1]));
             }
+
             break;
         }
 

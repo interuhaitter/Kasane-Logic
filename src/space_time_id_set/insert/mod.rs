@@ -1,3 +1,5 @@
+use std::f32::consts::E;
+
 use crate::{
     space_time_id::SpaceTimeId,
     space_time_id_set::{
@@ -53,15 +55,10 @@ impl SpaceTimeIdSet {
                 (Self::search_under_count(&self.y, &bit_vec), bit_vec)
             })
             .collect();
-
         //最も探索範囲が小さくなりそうな次元を代表次元として挿入を繰り返す
         //どこかの次元がなくなるまで繰り返す
 
         while !(f_encoded.is_empty() || x_encoded.is_empty() || y_encoded.is_empty()) {
-            println!("F:{:?}", f_encoded);
-            println!("X:{:?}", x_encoded);
-            println!("Y:{:?}", y_encoded);
-
             //各次元の代表の最小のやつを求める
             let (f_index, f_under_min_val) = {
                 let (i, v) = f_encoded
