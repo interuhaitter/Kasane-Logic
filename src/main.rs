@@ -11,8 +11,9 @@ use kasane_logic::{
 
 fn main() {
     let mut set = SpaceTimeIdSet::new();
-    let id = SpaceTimeId::new(
-        2,
+    let id1 = SpaceTimeId::random_z_max(5);
+    let id2 = SpaceTimeId::new(
+        4,
         [Some(-4), Some(-2)],
         [Some(3), Some(2)],
         [Some(3), Some(2)],
@@ -20,34 +21,20 @@ fn main() {
         [None, None],
     )
     .unwrap();
-    let id2 = SpaceTimeId::random_z_max(6);
 
-    set.insert(id2);
+    // set.insert(id1);
 
-    println!("{}", id2);
+    // println!("{},", id1);
+    // // println!("{}", id2);
 
-    println!("-------------");
-
-    for ele in set.get_all() {
-        println!("{},", ele);
-    }
-
-    // while true {
-
-    //     let f = convert_f(id2.z, id2.f);
-
-    //     for ele in f {
-    //         let convert = convert_bitmask_f(ele.0, ele.1);
-
-    //         let invert = invert_bitmask_f(&convert);
-
-    //         if ele != invert {
-    //             println!("-----------");
-    //             println!("before:{}/{}/-/-,", { ele.0 }, { ele.1 });
-    //             println!("after:{}/{}/-/-,", { invert.0 }, { invert.1 });
-
-    //             break;
-    //         }
-    //     }
+    // for ele in set.get_all() {
+    //     println!("{},", ele);
     // }
+    println!("{}", id1);
+
+    let f = convert_f(id1.z, id1.f);
+
+    for a in f {
+        println!("{}/{}/-/-,", { a.0 }, { a.1 });
+    }
 }

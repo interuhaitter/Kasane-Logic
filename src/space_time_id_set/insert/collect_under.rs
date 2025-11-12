@@ -20,7 +20,7 @@ impl SpaceTimeIdSet {
 
         for (_, layerinfo) in dims
             .main
-            .range((Included(main_bit), Excluded(&main_bit.under_prefix())))
+            .range((Included(&main_bit.under_prefix()), Excluded(main_bit)))
         {
             main_under.extend(layerinfo.index.clone());
         }
