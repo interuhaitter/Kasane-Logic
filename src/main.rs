@@ -3,8 +3,9 @@ use kasane_logic::{
 };
 
 fn main() {
-    // let test1 = BitVec::from_vec(vec![0b10101011, 0b11000000]);
-    // let test2 = BitVec::from_vec(vec![0b10101011, 0b11100000]);
+    // let test1 = BitVec::from_vec(vec![0b10101011, 0b10110000]);
+    // let test2 = BitVec::from_vec(vec![0b10101011, 0b11000000]);
+    // // println!("{}", test1 < test2);
 
     // let (start, end) = test1.under_prefix();
     // println!("START:{}", start);
@@ -32,7 +33,7 @@ fn main() {
     let id2 = SpaceTimeId::new(
         5,
         [Some(7), Some(7)],
-        [Some(8), Some(6)],
+        [Some(8), Some(5)],
         [Some(6), Some(6)],
         0,
         [None, None],

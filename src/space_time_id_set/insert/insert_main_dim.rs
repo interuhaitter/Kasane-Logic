@@ -172,10 +172,7 @@ impl SpaceTimeIdSet {
             let mut need_delete_inside: HashSet<Index> = HashSet::new();
             let mut need_insert_inside: HashSet<ReverseInfo> = HashSet::new();
 
-            for ((reverse_top_index, a_rel), (_, b_rel)) in iproduct!(
-                a_relation.0.iter().enumerate(),
-                b_relation.0.iter().enumerate()
-            ) {
+            for (i, (a_rel, b_rel)) in a_relation.0.iter().zip(b_relation.0.iter()).enumerate() {
                 match (a_rel, b_rel) {
                     (Relation::Top, Relation::Top) => {
                         println!("TTT");
@@ -186,7 +183,7 @@ impl SpaceTimeIdSet {
 
                         //相手を切断
                         self.top_top_under(
-                            main_top[reverse_top_index],
+                            main_top[i],
                             other_encoded[0][a_encode_index].1.clone(),
                             b_dim_select,
                             &mut need_delete_inside,
@@ -198,7 +195,7 @@ impl SpaceTimeIdSet {
 
                         //相手を切断
                         self.top_top_under(
-                            main_top[reverse_top_index],
+                            main_top[i],
                             other_encoded[1][b_encode_index].1.clone(),
                             a_dim_select,
                             &mut need_delete_inside,
@@ -209,27 +206,20 @@ impl SpaceTimeIdSet {
                         println!("TUU");
 
                         //自分を削る
-                        self.under_under_top(
-                            &mut need_divison,
-                            main_top[reverse_top_index],
-                            main_dim_select,
-                        );
+                        self.under_under_top(&mut need_divison, main_top[i], main_dim_select);
                     }
                     _ => {}
                 }
             }
 
             //代表次元におけるUnderを処理する
-            for ((reverse_under_index, a_rel), (_, b_rel)) in iproduct!(
-                a_relation.1.iter().enumerate(),
-                b_relation.1.iter().enumerate()
-            ) {
+            for (i, (a_rel, b_rel)) in a_relation.1.iter().zip(b_relation.1.iter()).enumerate() {
                 match (a_rel, b_rel) {
                     (Relation::Top, Relation::Top) => {
                         println!("UTT");
                         //相手を切断
                         self.top_top_under(
-                            main_under[reverse_under_index],
+                            main_under[i],
                             main_bit.clone(),
                             main_dim_select,
                             &mut need_delete_inside,
@@ -240,27 +230,19 @@ impl SpaceTimeIdSet {
                         println!("UTU");
 
                         //自分を切断
-                        self.under_under_top(
-                            &mut need_divison,
-                            main_under[reverse_under_index],
-                            a_dim_select,
-                        );
+                        self.under_under_top(&mut need_divison, main_under[i], a_dim_select);
                     }
                     (Relation::Under, Relation::Top) => {
                         println!("UUT");
 
                         //自分を切断
-                        self.under_under_top(
-                            &mut need_divison,
-                            main_under[reverse_under_index],
-                            b_dim_select,
-                        );
+                        self.under_under_top(&mut need_divison, main_under[i], b_dim_select);
                     }
                     (Relation::Under, Relation::Under) => {
                         println!("UUU");
 
                         //下位のIDを削除
-                        self.uncheck_delete(&main_under[reverse_under_index]);
+                        self.uncheck_delete(&main_under[i]);
                     }
                     _ => {}
                 }
@@ -327,6 +309,7 @@ impl SpaceTimeIdSet {
             }
 
             println!("INSIDE_DELETE:{:?}", need_delete_inside);
+            println!("INSIDE_INSERT:{:?}", need_insert_inside);
 
             need_delete.extend(need_delete_inside);
             need_insert.extend(need_insert_inside);

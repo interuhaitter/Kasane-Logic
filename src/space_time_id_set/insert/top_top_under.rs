@@ -19,11 +19,6 @@ impl SpaceTimeIdSet {
     ) {
         println!("top_top_under");
 
-        // 既に削除予定なら何もしない
-        if need_delete.contains(&target_index) {
-            return;
-        }
-
         // reverseから必要なデータをcloneして借用を解放
         let reverse = self.reverse.get(&target_index).unwrap();
 

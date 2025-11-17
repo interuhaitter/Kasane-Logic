@@ -19,21 +19,15 @@ impl SpaceTimeIdSet {
 
         if target == me {
             println!("EQUAL");
-
-            return Relation::Top;
+            return Relation::Under;
         } else if (me_range.0 < *target) && (target < &me_range.1) {
-            println!("START :{}", me_range.0);
-            println!("END   :{}", me_range.1);
-
             println!("TOP");
             return Relation::Top;
         } else if (target_range.0 < *me) && (me < &target_range.1) {
             println!("UNDER");
-
             return Relation::Under;
         } else {
             println!("DISJOINT");
-
             return Relation::Disjoint;
         }
     }
