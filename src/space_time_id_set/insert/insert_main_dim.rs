@@ -69,8 +69,8 @@ impl SpaceTimeIdSet {
 
         //逆引き
         let mut under_reverse = vec![];
-        for top_index in &main_under {
-            under_reverse.push(self.reverse.get(&top_index).unwrap());
+        for under_index in &main_under {
+            under_reverse.push(self.reverse.get(&*under_index).unwrap());
         }
 
         let a_dim_select: DimensionSelect;
@@ -164,6 +164,9 @@ impl SpaceTimeIdSet {
             //ここに来るということはAもBも関係があるので順番に競合を解消してあげる
 
             //代表次元におけるTopから処理する
+            println!("{:?}", a_relation);
+            println!("{:?}", b_relation);
+
             for ((reverse_top_index, a_rel), (_, b_rel)) in iproduct!(
                 a_relation.0.iter().enumerate(),
                 b_relation.0.iter().enumerate()
@@ -203,7 +206,6 @@ impl SpaceTimeIdSet {
                             &mut need_divison,
                             main_top[reverse_top_index],
                             main_dim_select,
-                            &mut need_delete,
                         );
                     }
                     _ => panic!(),
@@ -234,22 +236,20 @@ impl SpaceTimeIdSet {
                             &mut need_divison,
                             main_under[reverse_under_index],
                             a_dim_select,
-                            &mut need_delete,
                         );
                     }
                     (Relation::Under, Relation::Top) => {
-                        println!("TUT");
+                        println!("UUT");
 
                         //自分を切断
                         self.under_under_top(
                             &mut need_divison,
                             main_under[reverse_under_index],
                             b_dim_select,
-                            &mut need_delete,
                         );
                     }
                     (Relation::Under, Relation::Under) => {
-                        println!("TUU");
+                        println!("UUU");
 
                         //下位のIDを削除
                         self.uncheck_delete(&main_under[reverse_under_index]);

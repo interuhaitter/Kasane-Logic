@@ -14,6 +14,8 @@ impl SpaceTimeIdSet {
         target_dim: DimensionSelect,
         need_delete: &mut HashSet<Index>,
     ) {
+        println!("top_top_under");
+
         // 既に削除予定なら何もしない
         if need_delete.contains(&target_index) {
             return;

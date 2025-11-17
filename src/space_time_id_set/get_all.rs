@@ -20,27 +20,34 @@ impl SpaceTimeIdSet {
             let max_z = f_z.max(x_z).max(y_z);
 
             let f = if max_z == f_z {
-                [Some(f_v), Some(f_v)]
+                [f_v, f_v]
             } else {
                 let k = 2_i64.pow((max_z - f_z).into());
-                [Some(f_v * k), Some((f_v + 1) * k - 1)]
+                [f_v * k, (f_v + 1) * k - 1]
             };
 
             let x = if max_z == x_z {
-                [Some(x_v), Some(x_v)]
+                [x_v, x_v]
             } else {
                 let k = 2_u64.pow((max_z - x_z).into());
-                [Some(x_v * k), Some((x_v + 1) * k - 1)]
+                [x_v * k, (x_v + 1) * k - 1]
             };
 
             let y = if max_z == y_z {
-                [Some(y_v), Some(y_v)]
+                [y_v, y_v]
             } else {
                 let k = 2_u64.pow((max_z - y_z).into());
-                [Some(y_v * k), Some((y_v + 1) * k - 1)]
+                [y_v * k, (y_v + 1) * k - 1]
             };
 
-            result.push(SpaceTimeId::new(max_z, f, x, y, 0, [None, None]).unwrap());
+            result.push(SpaceTimeId {
+                z: max_z,
+                f,
+                x,
+                y,
+                i: 0,
+                t: [0, u64::MAX],
+            });
         }
         result
     }
