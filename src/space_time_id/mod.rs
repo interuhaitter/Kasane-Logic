@@ -8,6 +8,15 @@ use crate::{
     space_time_id::z_range::{F_MAX, F_MIN, XY_MAX},
 };
 
+/// 時空間ID（4次元：3次元空間+時間）
+///
+/// 各次元は範囲として表現され、ズームレベルによって解像度が決まる
+/// - z: ズームレベル (0-60)
+/// - f: 高度方向の範囲 (符号付き整数)
+/// - x: 経度方向の範囲 (符号なし整数)
+/// - y: 緯度方向の範囲 (符号なし整数)
+/// - i: インデックス（将来の拡張用）
+/// - t: 時間範囲（将来の拡張用）
 #[derive(Serialize, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SpaceTimeId {
     pub z: u8,
@@ -19,7 +28,10 @@ pub struct SpaceTimeId {
 }
 
 impl SpaceTimeId {
-    /// 値の範囲を確認・正規化する
+    /// 新しい時空間IDを作成
+    ///
+    /// 各次元の値の範囲を確認・正規化する。
+    /// None を指定すると、その次元の最小値または最大値が使用される。
     pub fn new(
         z: u8,
         f: [Option<i64>; 2],

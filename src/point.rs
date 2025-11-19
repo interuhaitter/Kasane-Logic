@@ -1,11 +1,15 @@
 use crate::{error::Error, space_time_id::SpaceTimeId};
 
+/// 3次元空間上の点を表現する型
+///
+/// 緯度経度高度形式(Coordinate)とECEF座標系(ECEF)の2つの表現をサポート
 pub enum Point {
     Coordinate(Coordinate),
     ECEF(ECEF),
 }
 
 impl Point {
+    /// Coordinate形式に変換
     pub fn to_coordinate(&self) -> Coordinate {
         match self {
             Point::Coordinate(coordinate) => *coordinate,
@@ -21,6 +25,7 @@ impl Point {
     }
 }
 
+/// 緯度経度高度による座標表現
 #[derive(Debug, Clone, Copy)]
 pub struct Coordinate {
     pub latitude: f64,
@@ -28,6 +33,7 @@ pub struct Coordinate {
     pub altitude: f64,
 }
 
+/// ECEF（地球中心地球固定）座標系による座標表現
 #[derive(Debug, Clone, Copy)]
 pub struct ECEF {
     pub x: f64,
@@ -36,6 +42,7 @@ pub struct ECEF {
 }
 
 impl ECEF {
+    /// 新しいECEF座標を作成
     pub fn new(x: f64, y: f64, z: f64) -> ECEF {
         ECEF { x, y, z }
     }
@@ -80,12 +87,14 @@ impl ECEF {
         }
     }
 
+    /// 指定されたズームレベルで時空間IDに変換（ECEF版）
     pub fn to_id(&self, z: u8) -> SpaceTimeId {
         self.to_coordinate().to_id(z)
     }
 }
 
 impl Coordinate {
+    /// 新しい座標を作成（範囲チェック付き）
     pub fn new(latitude: f64, longitude: f64, altitude: f64) -> Result<Self, Error> {
         if !(-90.0..=90.0).contains(&latitude) {
             return Err(Error::LatitudeOutOfRange { latitude });
@@ -136,6 +145,7 @@ impl Coordinate {
         }
     }
 
+    /// 指定されたズームレベルで時空間IDに変換（Coordinate版）
     pub fn to_id(&self, z: u8) -> SpaceTimeId {
         let lat = self.latitude;
         let lon = self.longitude;

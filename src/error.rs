@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-#[derive(Debug, Error, Serialize, Deserialize)]
 
+/// Kasane-logicで発生するエラー型
+#[derive(Debug, Error, Serialize, Deserialize)]
 pub enum Error {
     #[error("ZoomLevel '{zoom_level}' is out of range (valid: 0..=60)")]
     ZoomLevelOutOfRange { zoom_level: u8 },

@@ -4,13 +4,15 @@ pub mod remove_bottom_layer;
 pub mod reverse_bottom_layer;
 pub mod top_prefix;
 pub mod under_prefix;
-///Bit列を用いて時空間IDの各次元の階層構造を管理する
-#[derive(Debug, Clone, Eq, Hash, PartialEq, PartialOrd, Ord)]
 
+/// ビット列を用いて時空間IDの各次元の階層構造を管理する
+///
+/// 内部的にはバイト配列として保持し、階層ごとのビット操作を効率的に行う
+#[derive(Debug, Clone, Eq, Hash, PartialEq, PartialOrd, Ord)]
 pub struct BitVec(pub Vec<u8>);
 
 impl BitVec {
-    /// Vec<u8> から BitVec を生成
+    /// `Vec<u8>` から BitVec を生成
     pub fn from_vec(v: Vec<u8>) -> Self {
         BitVec(v)
     }

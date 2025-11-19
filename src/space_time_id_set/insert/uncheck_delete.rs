@@ -6,8 +6,8 @@ use crate::{
 
 impl SpaceTimeIdSet {
     pub(crate) fn uncheck_delete(&mut self, index: &Index) {
-        // println!("DELETE:{}", index);
-        let removed = self.reverse.remove(index).unwrap();
+        let removed = self.reverse.remove(index)
+            .expect("Internal error: reverse index not found in uncheck_delete");
 
         Self::update_layer_delete(&mut self.f, &removed.f, *index);
         Self::update_layer_delete(&mut self.x, &removed.x, *index);

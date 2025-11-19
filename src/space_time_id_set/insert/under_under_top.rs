@@ -19,7 +19,8 @@ impl SpaceTimeIdSet {
         target_bit_index: Index,
         target_dim: DimensionSelect,
     ) {
-        let reverse = self.reverse.get(&target_bit_index).unwrap();
+        let reverse = self.reverse.get(&target_bit_index)
+            .expect("Internal error: reverse index not found in under_under_top");
 
         match target_dim {
             DimensionSelect::F => {

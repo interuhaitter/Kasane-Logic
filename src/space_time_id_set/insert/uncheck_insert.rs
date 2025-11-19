@@ -5,18 +5,15 @@ use crate::{
     space_time_id_set::{LayerInfo, ReverseInfo, SpaceTimeIdSet},
 };
 
-//Todo:ここら辺に隣と結合する処理を追加したい
 
 impl SpaceTimeIdSet {
     pub(crate) fn uncheck_insert(&mut self, f: &BitVec, x: &BitVec, y: &BitVec) {
         let index = self.generate_index();
 
-        // 各次元に共通処理を適用
         Self::update_layer(&mut self.f, f, index);
         Self::update_layer(&mut self.x, x, index);
         Self::update_layer(&mut self.y, y, index);
 
-        //逆引きに挿入
         self.reverse.insert(
             index,
             ReverseInfo {

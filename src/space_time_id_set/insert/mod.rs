@@ -28,12 +28,10 @@ impl SpaceTimeIdSet {
     ///SpaceTimeIDSetに新規のIDを挿入する。
     /// 既存の範囲と重複がある場合は挿入時に調整が行われ、重複が排除される。
     pub fn insert(&mut self, id: SpaceTimeId) {
-        //IDを各次元ごとに最適な単体範囲に分解する
         let f_splited = convert_f(id.z, id.f);
         let x_splited = convert_xy(id.z, id.x);
         let y_splited = convert_xy(id.z, id.y);
 
-        //各次元の範囲をBitVecに変換する(usize=下位範囲の個数、BitVec=エンコード結果)
         let mut f_encoded: Vec<(usize, BitVec)> = f_splited
             .iter()
             .map(|(z, f)| {
@@ -57,13 +55,12 @@ impl SpaceTimeIdSet {
             .collect();
 
         while !(f_encoded.is_empty() || x_encoded.is_empty() || y_encoded.is_empty()) {
-            //各次元の代表の最小のやつを求める
             let (f_index, f_under_min_val) = {
                 let (i, v) = f_encoded
                     .iter()
                     .enumerate()
                     .min_by_key(|(_, v)| v.0)
-                    .unwrap();
+                    .expect("Internal error: f_encoded is empty");
                 (i, (v.0, v.1.clone()))
             };
 
@@ -72,7 +69,7 @@ impl SpaceTimeIdSet {
                     .iter()
                     .enumerate()
                     .min_by_key(|(_, v)| v.0)
-                    .unwrap();
+                    .expect("Internal error: x_encoded is empty");
                 (i, (v.0, v.1.clone()))
             };
 
@@ -81,7 +78,7 @@ impl SpaceTimeIdSet {
                     .iter()
                     .enumerate()
                     .min_by_key(|(_, v)| v.0)
-                    .unwrap();
+                    .expect("Internal error: y_encoded is empty");
                 (i, (v.0, v.1.clone()))
             };
 

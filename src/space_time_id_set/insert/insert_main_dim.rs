@@ -38,86 +38,9 @@ impl SpaceTimeIdSet {
         other_encoded: &[&Vec<(Index, BitVec)>; 2],
         main_dim_select: DimensionSelect,
     ) {
-        // println!("-------------代表次元：{:?}-------------", main_dim_select);
-        //代表次元が何かの下位になるものを収拾する
         let main_under: Vec<Index> = Self::collect_top(&self, main_bit, &main_dim_select);
 
-        // println!(
-        //     "代表次元：{:?}の下位の個数{}",
-        //     main_dim_select, main_under_count
-        // );
-
-        //デバッグ用に出力
-        // {
-        //     for (_, a) in other_encoded[0] {
-        //         for (_, b) in other_encoded[1] {
-        //             let decode_f;
-        //             let decode_x;
-        //             let decode_y;
-        //             match main_dim_select {
-        //                 DimensionSelect::F => {
-        //                     decode_f = invert_bitmask_f(main_bit);
-        //                     decode_x = invert_bitmask_xy(a);
-        //                     decode_y = invert_bitmask_xy(b);
-        //                 }
-        //                 DimensionSelect::X => {
-        //                     decode_f = invert_bitmask_f(a);
-        //                     decode_x = invert_bitmask_xy(main_bit);
-        //                     decode_y = invert_bitmask_xy(b);
-        //                 }
-        //                 DimensionSelect::Y => {
-        //                     decode_f = invert_bitmask_f(a);
-        //                     decode_x = invert_bitmask_xy(b);
-        //                     decode_y = invert_bitmask_xy(main_bit);
-        //                 }
-        //             }
-
-        //             let (f_z, f_v) = decode_f;
-        //             let (x_z, x_v) = decode_x;
-        //             let (y_z, y_v) = decode_y;
-
-        //             let max_z = f_z.max(x_z).max(y_z);
-
-        //             let f = if max_z == f_z {
-        //                 [f_v, f_v]
-        //             } else {
-        //                 let k = 2_i64.pow((max_z - f_z).into());
-        //                 [f_v * k, (f_v + 1) * k - 1]
-        //             };
-
-        //             let x = if max_z == x_z {
-        //                 [x_v, x_v]
-        //             } else {
-        //                 let k = 2_u64.pow((max_z - x_z).into());
-        //                 [x_v * k, (x_v + 1) * k - 1]
-        //             };
-
-        //             let y = if max_z == y_z {
-        //                 [y_v, y_v]
-        //             } else {
-        //                 let k = 2_u64.pow((max_z - y_z).into());
-        //                 [y_v * k, (y_v + 1) * k - 1]
-        //             };
-
-        //             println!(
-        //                 "{},",
-        //                 SpaceTimeId {
-        //                     z: max_z,
-        //                     f,
-        //                     x,
-        //                     y,
-        //                     i: 0,
-        //                     t: [0, u64::MAX],
-        //                 }
-        //             );
-        //         }
-        //     }
-        // }
-
-        //代表次元において、上位も下位も存在しなかった場合は無条件に挿入
         if main_under.is_empty() && *main_under_count == 0 {
-            // println!("上位も下位も存在しないため、無条件で挿入");
-            //挿入
             for ((_, a_bit), (_, b_bit)) in iproduct!(other_encoded[0], other_encoded[1]) {
                 match main_dim_select {
                     DimensionSelect::F => self.uncheck_insert(main_bit, a_bit, b_bit),
@@ -125,34 +48,24 @@ impl SpaceTimeIdSet {
                     DimensionSelect::Y => self.uncheck_insert(a_bit, b_bit, main_bit),
                 };
 
-                //代表次元を元の要素から削除
             }
             let _removed = main_encoded.remove(*main_index);
-            // println!("=======================");
-            // for ele in self.get_all() {
-            //     println!("{},", ele);
-            // }
-            // println!("=======================");
             return;
         }
 
-        //代表次元において下位の範囲を収拾
         let main_top: Vec<Index> = self.collect_under(main_bit, &main_dim_select);
 
-        // println!("代表次元RNG:{}", main_bit);
-        // println!("代表次元TOP:{:?}", main_top);
-        // println!("代表次元UND:{:?}", main_under);
 
-        //逆引き
         let mut top_reverse = vec![];
         for top_index in &main_top {
-            top_reverse.push(self.reverse.get(&top_index).unwrap());
+            top_reverse.push(self.reverse.get(&top_index)
+                .expect("Internal error: reverse index not found for top"));
         }
 
-        //逆引き
         let mut under_reverse = vec![];
         for under_index in &main_under {
-            under_reverse.push(self.reverse.get(&*under_index).unwrap());
+            under_reverse.push(self.reverse.get(&*under_index)
+                .expect("Internal error: reverse index not found for under"));
         }
 
         let a_dim_select: DimensionSelect;
@@ -173,13 +86,9 @@ impl SpaceTimeIdSet {
             }
         }
 
-        //軸ごとに関係を見極める              MainTop         MainUnder
         let mut a_relations: Vec<Option<(Vec<Relation>, Vec<Relation>)>> = Vec::new();
-        //軸ごとに関係を見極める              MainTop         MainUnder
         let mut b_relations: Vec<Option<(Vec<Relation>, Vec<Relation>)>> = Vec::new();
 
-        //Aについて収拾する
-        // println!("Aを収拾");
         for (_, a_dim) in other_encoded[0] {
             a_relations.push(Self::collect_other_dimension(
                 a_dim,
@@ -189,8 +98,6 @@ impl SpaceTimeIdSet {
             ));
         }
 
-        //Bについて収拾する
-        // println!("Bを収拾");
         for (_, b_dim) in other_encoded[1] {
             b_relations.push(Self::collect_other_dimension(
                 b_dim,
@@ -200,22 +107,17 @@ impl SpaceTimeIdSet {
             ));
         }
 
-        //既にあるIDから削除するための構造体を作成
         let mut need_delete: HashSet<Index> = HashSet::new();
         let mut need_insert: HashSet<ReverseInfo> = HashSet::new();
 
-        // println!("a_relations : {:?}", a_relations);
-        // println!("b_relations : {:?}", b_relations);
 
         'outer: for ((a_encode_index, a), (b_encode_index, b)) in iproduct!(
             a_relations.iter().enumerate(),
             b_relations.iter().enumerate()
         ) {
-            //もしA軸が無関係ならば即時挿入する
             let a_relation = match a {
                 Some(v) => v,
                 None => {
-                    // println!("無条件挿入A");
                     self.uncheck_insert_dim(
                         main_dim_select,
                         main_bit,
@@ -226,12 +128,10 @@ impl SpaceTimeIdSet {
                 }
             };
 
-            //もしB軸が無関係ならば即時挿入する
 
             let b_relation = match b {
                 Some(v) => v,
                 None => {
-                    // println!("無条件挿入B");
 
                     self.uncheck_insert_dim(
                         main_dim_select,
@@ -243,30 +143,22 @@ impl SpaceTimeIdSet {
                 }
             };
 
-            //自分から削除する部分をためる構造体を作成
             let mut need_divison = NeedDivison {
                 f: vec![],
                 x: vec![],
                 y: vec![],
             };
 
-            //ここに来るということはAもBも関係があるので順番に競合を解消してあげる
 
-            //削除するべきものをまとめる
             let mut need_delete_inside: HashSet<Index> = HashSet::new();
             let mut need_insert_inside: HashSet<ReverseInfo> = HashSet::new();
 
-            //代表次元におけるTopから処理する
             for (i, (a_rel, b_rel)) in a_relation.0.iter().zip(b_relation.0.iter()).enumerate() {
                 match (a_rel, b_rel) {
                     (Relation::Top, Relation::Top) => {
-                        // println!("TTT");
-                        //自分に含まれているIDを削除する
                         need_delete_inside.insert(main_top[i]);
                     }
                     (Relation::Top, Relation::Under) => {
-                        // println!("TTU");
-                        //相手を切断
                         self.top_top_under(
                             main_top[i],
                             other_encoded[1][b_encode_index].1.clone(),
@@ -276,9 +168,7 @@ impl SpaceTimeIdSet {
                         );
                     }
                     (Relation::Under, Relation::Top) => {
-                        // println!("TUT");
 
-                        //相手を切断
                         self.top_top_under(
                             main_top[i],
                             other_encoded[0][a_encode_index].1.clone(),
@@ -288,21 +178,16 @@ impl SpaceTimeIdSet {
                         );
                     }
                     (Relation::Under, Relation::Under) => {
-                        // println!("TUU");
 
-                        //自分を削る
                         self.under_under_top(&mut need_divison, main_top[i], main_dim_select);
                     }
                     _ => {}
                 }
             }
 
-            //代表次元におけるUnderを処理する
             for (i, (a_rel, b_rel)) in a_relation.1.iter().zip(b_relation.1.iter()).enumerate() {
                 match (a_rel, b_rel) {
                     (Relation::Top, Relation::Top) => {
-                        // println!("UTT");
-                        //相手を切断
                         self.top_top_under(
                             main_under[i],
                             main_bit.clone(),
@@ -312,30 +197,22 @@ impl SpaceTimeIdSet {
                         );
                     }
                     (Relation::Top, Relation::Under) => {
-                        // println!("UTU");
 
-                        //自分を切断
                         self.under_under_top(&mut need_divison, main_under[i], a_dim_select);
                     }
                     (Relation::Under, Relation::Top) => {
-                        // println!("UUT");
 
-                        //自分を切断
                         self.under_under_top(&mut need_divison, main_under[i], b_dim_select);
                     }
                     (Relation::Under, Relation::Under) => {
-                        // println!("UUU");
 
-                        //自分は挿入の必要がない
                         continue 'outer;
                     }
                     _ => {}
                 }
             }
 
-            // println!("{:?}", need_divison);
 
-            //自身を分割
             let f_splited;
             let x_splited;
             let y_splited;
@@ -386,8 +263,6 @@ impl SpaceTimeIdSet {
                 self.uncheck_insert(&f, &x, &y);
             }
 
-            // println!("INSIDE_DELETE:{:?}", need_delete_inside);
-            // println!("INSIDE_INSERT:{:?}", need_insert_inside);
 
             need_delete.extend(need_delete_inside);
             need_insert.extend(need_insert_inside);
@@ -401,10 +276,5 @@ impl SpaceTimeIdSet {
 
         main_encoded.remove(*main_index);
 
-        // println!("=======================");
-        // for ele in self.get_all() {
-        //     println!("{},", ele);
-        // }
-        // println!("=======================");
     }
 }
