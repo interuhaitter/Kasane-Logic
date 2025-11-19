@@ -3,14 +3,11 @@ use crate::{
     space_time_id_set::{Index, SpaceTimeIdSet, insert::insert_main_dim::DimensionSelect},
 };
 
-use std::{
-    f32::consts::E,
-    ops::Bound::{Excluded, Included},
-};
+use std::ops::Bound::Excluded;
 
 impl SpaceTimeIdSet {
     ///与えられた次元において、下位の範囲を収集する
-    pub fn collect_under(
+    pub(crate) fn collect_under(
         &self,
         main_bit: &BitVec,
         main_dim_select: &DimensionSelect,

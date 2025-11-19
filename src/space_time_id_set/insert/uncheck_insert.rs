@@ -8,7 +8,7 @@ use crate::{
 //Todo:ここら辺に隣と結合する処理を追加したい
 
 impl SpaceTimeIdSet {
-    pub fn uncheck_insert(&mut self, f: &BitVec, x: &BitVec, y: &BitVec) {
+    pub(crate) fn uncheck_insert(&mut self, f: &BitVec, x: &BitVec, y: &BitVec) {
         let index = self.generate_index();
 
         // 各次元に共通処理を適用

@@ -1,4 +1,4 @@
-pub fn convert_xy(z: u8, dimension: [u64; 2]) -> Vec<(u8, u64)> {
+pub(crate) fn convert_xy(z: u8, dimension: [u64; 2]) -> Vec<(u8, u64)> {
     let mut target = dimension;
     let mut now_z = z;
     let mut result = Vec::new();

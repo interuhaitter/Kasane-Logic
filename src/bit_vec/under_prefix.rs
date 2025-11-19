@@ -15,7 +15,7 @@ impl BitVec {
         let mut copyed = self.clone();
 
         // next_prefix 本体
-        for (byte_index, byte) in copyed.0.iter_mut().enumerate().rev() {
+        for (_byte_index, byte) in copyed.0.iter_mut().enumerate().rev() {
             for i in 0..=3 {
                 let mask = 0b00000011 << (i * 2);
                 let masked = *byte & mask;

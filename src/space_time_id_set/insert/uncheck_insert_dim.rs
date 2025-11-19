@@ -4,7 +4,7 @@ use crate::{
 };
 
 impl SpaceTimeIdSet {
-    pub fn uncheck_insert_dim(
+    pub(crate) fn uncheck_insert_dim(
         &mut self,
         dim_select: DimensionSelect,
         main: &BitVec,

@@ -10,7 +10,7 @@ pub enum Relation {
 
 impl SpaceTimeIdSet {
     ///mainの上位IDについて逆引き検索する関数
-    pub fn check_relation(me: &BitVec, target: &BitVec) -> Relation {
+    pub(crate) fn check_relation(me: &BitVec, target: &BitVec) -> Relation {
         let me_range = me.under_prefix();
         let target_range = target.under_prefix();
         if target == me {

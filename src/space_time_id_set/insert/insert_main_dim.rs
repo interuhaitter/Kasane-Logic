@@ -4,11 +4,9 @@ use itertools::iproduct;
 
 use crate::{
     bit_vec::BitVec,
-    space_time_id::SpaceTimeId,
     space_time_id_set::{
         Index, ReverseInfo, SpaceTimeIdSet,
-        insert::{check_relation::Relation, select_dimensions, under_under_top::NeedDivison},
-        single::{invert_bitvec_f::invert_bitmask_f, invert_bitvec_xy::invert_bitmask_xy},
+        insert::{check_relation::Relation, under_under_top::NeedDivison},
     },
 };
 
@@ -31,7 +29,7 @@ impl DimensionSelect {
 
 impl SpaceTimeIdSet {
     /// 代表次元×他の次元を挿入処理する
-    pub fn insert_main_dim(
+    pub(crate) fn insert_main_dim(
         &mut self,
         main_bit: &BitVec,
         main_index: &Index,

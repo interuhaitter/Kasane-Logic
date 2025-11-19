@@ -7,7 +7,7 @@ use crate::{
 };
 
 impl SpaceTimeIdSet {
-    pub fn collect_other_dimension(
+    pub(crate) fn collect_other_dimension(
         dim: &BitVec,
         dim_select: DimensionSelect,
         top_reverse: &Vec<&ReverseInfo>,

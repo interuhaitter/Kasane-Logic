@@ -17,7 +17,7 @@ pub struct DimensionReverseRefs<'a> {
 
 impl SpaceTimeIdSet {
     /// メイン次元とその他の次元の参照を選択
-    pub fn select_dimensions(&self, dim: &DimensionSelect) -> DimensionRefs<'_> {
+    pub(crate) fn select_dimensions(&self, dim: &DimensionSelect) -> DimensionRefs<'_> {
         match dim {
             DimensionSelect::F => DimensionRefs {
                 main: &self.f,

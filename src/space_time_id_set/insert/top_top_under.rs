@@ -2,17 +2,15 @@ use std::collections::HashSet;
 
 use crate::{
     bit_vec::BitVec,
-    space_time_id::SpaceTimeId,
     space_time_id_set::{
         Index, ReverseInfo, SpaceTimeIdSet,
         insert::insert_main_dim::DimensionSelect,
-        single::{invert_bitvec_f::invert_bitmask_f, invert_bitvec_xy::invert_bitmask_xy},
     },
 };
 
 impl SpaceTimeIdSet {
     ///相手を切断する
-    pub fn top_top_under(
+    pub(crate) fn top_top_under(
         &mut self,
         target_index: Index,
         target_bit: BitVec,

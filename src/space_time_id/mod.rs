@@ -26,7 +26,7 @@ impl SpaceTimeId {
         x: [Option<u64>; 2],
         y: [Option<u64>; 2],
         i: u32,
-        t: [Option<u32>; 2],
+        _t: [Option<u32>; 2],
     ) -> Result<Self, Error> {
         if z > 60 {
             return Err(Error::ZoomLevelOutOfRange { zoom_level: z });

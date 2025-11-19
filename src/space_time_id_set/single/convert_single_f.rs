@@ -1,4 +1,4 @@
-pub fn convert_f(z: u8, dimension: [i64; 2]) -> Vec<(u8, i64)> {
+pub(crate) fn convert_f(z: u8, dimension: [i64; 2]) -> Vec<(u8, i64)> {
     let diff = 2_i64.pow(z.into());
     let mut target = [dimension[0] + diff, dimension[1] + diff];
     let mut now_z = z;

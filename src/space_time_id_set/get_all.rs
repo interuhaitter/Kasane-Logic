@@ -10,7 +10,7 @@ impl SpaceTimeIdSet {
     ///SpaceTimeIDSet内部の全てのIDを取得する
     pub fn get_all(&self) -> Vec<SpaceTimeId> {
         let mut result = vec![];
-        for (index, reverse) in &self.reverse {
+        for (_index, reverse) in &self.reverse {
             let (f_z, f_v) = invert_bitmask_f(&reverse.f);
             let (x_z, x_v) = invert_bitmask_xy(&reverse.x);
             let (y_z, y_v) = invert_bitmask_xy(&reverse.y);
