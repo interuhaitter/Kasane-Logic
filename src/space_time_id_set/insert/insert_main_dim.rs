@@ -5,7 +5,7 @@ use itertools::iproduct;
 use crate::{
     bit_vec::BitVec,
     space_time_id_set::{
-        Index, ReverseInfo, SpaceTimeIdSet,
+        Index, Interval, ReverseInfo, SpaceTimeIdSet,
         insert::{check_relation::Relation, under_under_top::NeedDivison},
     },
 };
@@ -37,6 +37,7 @@ impl SpaceTimeIdSet {
         main_encoded: &mut Vec<(Index, BitVec)>,
         other_encoded: &[&Vec<(Index, BitVec)>; 2],
         main_dim_select: DimensionSelect,
+        interval: &Interval,
     ) {
         let main_under: Vec<Index> = Self::collect_top(&self, main_bit, &main_dim_select);
 
@@ -47,7 +48,6 @@ impl SpaceTimeIdSet {
                     DimensionSelect::X => self.uncheck_insert(a_bit, main_bit, b_bit),
                     DimensionSelect::Y => self.uncheck_insert(a_bit, b_bit, main_bit),
                 };
-
             }
             let _removed = main_encoded.remove(*main_index);
             return;
@@ -55,17 +55,22 @@ impl SpaceTimeIdSet {
 
         let main_top: Vec<Index> = self.collect_under(main_bit, &main_dim_select);
 
-
         let mut top_reverse = vec![];
         for top_index in &main_top {
-            top_reverse.push(self.reverse.get(&top_index)
-                .expect("Internal error: reverse index not found for top"));
+            top_reverse.push(
+                self.reverse
+                    .get(&top_index)
+                    .expect("Internal error: reverse index not found for top"),
+            );
         }
 
         let mut under_reverse = vec![];
         for under_index in &main_under {
-            under_reverse.push(self.reverse.get(&*under_index)
-                .expect("Internal error: reverse index not found for under"));
+            under_reverse.push(
+                self.reverse
+                    .get(&*under_index)
+                    .expect("Internal error: reverse index not found for under"),
+            );
         }
 
         let a_dim_select: DimensionSelect;
@@ -110,7 +115,6 @@ impl SpaceTimeIdSet {
         let mut need_delete: HashSet<Index> = HashSet::new();
         let mut need_insert: HashSet<ReverseInfo> = HashSet::new();
 
-
         'outer: for ((a_encode_index, a), (b_encode_index, b)) in iproduct!(
             a_relations.iter().enumerate(),
             b_relations.iter().enumerate()
@@ -128,11 +132,9 @@ impl SpaceTimeIdSet {
                 }
             };
 
-
             let b_relation = match b {
                 Some(v) => v,
                 None => {
-
                     self.uncheck_insert_dim(
                         main_dim_select,
                         main_bit,
@@ -148,7 +150,6 @@ impl SpaceTimeIdSet {
                 x: vec![],
                 y: vec![],
             };
-
 
             let mut need_delete_inside: HashSet<Index> = HashSet::new();
             let mut need_insert_inside: HashSet<ReverseInfo> = HashSet::new();
@@ -168,7 +169,6 @@ impl SpaceTimeIdSet {
                         );
                     }
                     (Relation::Under, Relation::Top) => {
-
                         self.top_top_under(
                             main_top[i],
                             other_encoded[0][a_encode_index].1.clone(),
@@ -178,7 +178,6 @@ impl SpaceTimeIdSet {
                         );
                     }
                     (Relation::Under, Relation::Under) => {
-
                         self.under_under_top(&mut need_divison, main_top[i], main_dim_select);
                     }
                     _ => {}
@@ -197,21 +196,17 @@ impl SpaceTimeIdSet {
                         );
                     }
                     (Relation::Top, Relation::Under) => {
-
                         self.under_under_top(&mut need_divison, main_under[i], a_dim_select);
                     }
                     (Relation::Under, Relation::Top) => {
-
                         self.under_under_top(&mut need_divison, main_under[i], b_dim_select);
                     }
                     (Relation::Under, Relation::Under) => {
-
                         continue 'outer;
                     }
                     _ => {}
                 }
             }
-
 
             let f_splited;
             let x_splited;
@@ -263,7 +258,6 @@ impl SpaceTimeIdSet {
                 self.uncheck_insert(&f, &x, &y);
             }
 
-
             need_delete.extend(need_delete_inside);
             need_insert.extend(need_insert_inside);
         }
@@ -275,6 +269,5 @@ impl SpaceTimeIdSet {
         }
 
         main_encoded.remove(*main_index);
-
     }
 }

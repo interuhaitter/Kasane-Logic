@@ -23,6 +23,14 @@ pub struct ReverseInfo {
     pub f: BitVec,
     pub x: BitVec,
     pub y: BitVec,
+    pub t: Interval,
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub struct Interval {
+    pub t1: u64,
+    pub t2: u64,
+    pub i: u32,
 }
 
 /// 時空間IDの集合を効率的に管理するデータ構造
@@ -35,6 +43,7 @@ pub struct SpaceTimeIdSet {
     f: BTreeMap<BitVec, LayerInfo>,
     x: BTreeMap<BitVec, LayerInfo>,
     y: BTreeMap<BitVec, LayerInfo>,
+    t: BTreeMap<(u64, Index), Interval>,
     index: usize,
     reverse: HashMap<Index, ReverseInfo>,
 }
@@ -45,6 +54,7 @@ impl SpaceTimeIdSet {
             f: BTreeMap::new(),
             x: BTreeMap::new(),
             y: BTreeMap::new(),
+            t: BTreeMap::new(),
             index: 0,
             reverse: HashMap::new(),
         }

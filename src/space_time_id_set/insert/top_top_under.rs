@@ -23,12 +23,6 @@ impl SpaceTimeIdSet {
         let reverse = self.reverse.get(&target_index)
             .expect("Internal error: reverse index not found in top_top_under");
 
-
-
-
-
-
-
         let top = match target_dim {
             DimensionSelect::F => reverse.f.clone(),
             DimensionSelect::X => reverse.x.clone(),

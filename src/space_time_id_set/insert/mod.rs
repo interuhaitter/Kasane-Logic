@@ -1,8 +1,10 @@
+use std::process::id;
+
 use crate::{
     bit_vec::BitVec,
     space_time_id::SpaceTimeId,
     space_time_id_set::{
-        SpaceTimeIdSet,
+        Interval, SpaceTimeIdSet,
         insert::insert_main_dim::DimensionSelect,
         single::{
             convert_bitvec_f::convert_bitmask_f, convert_bitvec_xy::convert_bitmask_xy,
@@ -18,6 +20,7 @@ pub mod generate_index;
 pub mod insert_main_dim;
 pub mod search_under_count;
 pub mod select_dimensions;
+pub mod time_relation;
 pub mod top_top_under;
 pub mod uncheck_delete;
 pub mod uncheck_insert;
@@ -53,6 +56,12 @@ impl SpaceTimeIdSet {
                 (Self::search_under_count(&self.y, &bit_vec), bit_vec)
             })
             .collect();
+
+        let interval = Interval {
+            t1: id.t[0],
+            t2: id.t[1],
+            i: id.i,
+        };
 
         while !(f_encoded.is_empty() || x_encoded.is_empty() || y_encoded.is_empty()) {
             let (f_index, f_under_min_val) = {
@@ -94,6 +103,7 @@ impl SpaceTimeIdSet {
                     &mut f_encoded,
                     &[&x_encoded, &y_encoded],
                     DimensionSelect::F,
+                    &interval,
                 );
             } else if min_under == x_under_min_val.0 {
                 self.insert_main_dim(
@@ -103,6 +113,7 @@ impl SpaceTimeIdSet {
                     &mut x_encoded,
                     &[&f_encoded, &y_encoded],
                     DimensionSelect::X,
+                    &interval,
                 );
             } else {
                 self.insert_main_dim(
@@ -112,6 +123,7 @@ impl SpaceTimeIdSet {
                     &mut y_encoded,
                     &[&f_encoded, &x_encoded],
                     DimensionSelect::Y,
+                    &interval,
                 );
             }
         }

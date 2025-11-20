@@ -1,6 +1,6 @@
 use crate::{
     bit_vec::BitVec,
-    space_time_id_set::{SpaceTimeIdSet, insert::insert_main_dim::DimensionSelect},
+    space_time_id_set::{Interval, SpaceTimeIdSet, insert::insert_main_dim::DimensionSelect},
 };
 
 impl SpaceTimeIdSet {
@@ -10,16 +10,17 @@ impl SpaceTimeIdSet {
         main: &BitVec,
         a: &BitVec,
         b: &BitVec,
+        t: &Interval,
     ) {
         match dim_select {
             DimensionSelect::F => {
-                self.uncheck_insert(main, a, b);
+                self.uncheck_insert(main, a, b, t);
             }
             DimensionSelect::X => {
-                self.uncheck_insert(a, main, b);
+                self.uncheck_insert(a, main, b, t);
             }
             DimensionSelect::Y => {
-                self.uncheck_insert(a, b, main);
+                self.uncheck_insert(a, b, main, t);
             }
         }
     }

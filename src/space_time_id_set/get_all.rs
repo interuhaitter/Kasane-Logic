@@ -43,8 +43,8 @@ impl SpaceTimeIdSet {
                 f,
                 x,
                 y,
-                i: 0,
-                t: [0, u64::MAX],
+                i: reverse.t.i,
+                t: [reverse.t.t1, reverse.t.t2],
             });
         }
 

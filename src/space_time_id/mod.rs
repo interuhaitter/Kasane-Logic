@@ -15,8 +15,8 @@ use crate::{
 /// - f: 高度方向の範囲 (符号付き整数)
 /// - x: 経度方向の範囲 (符号なし整数)
 /// - y: 緯度方向の範囲 (符号なし整数)
-/// - i: インデックス（将来の拡張用）
-/// - t: 時間範囲（将来の拡張用）
+/// - i: インデックス
+/// - t: 時間範囲
 #[derive(Serialize, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SpaceTimeId {
     pub z: u8,
@@ -38,7 +38,7 @@ impl SpaceTimeId {
         x: [Option<u64>; 2],
         y: [Option<u64>; 2],
         i: u32,
-        _t: [Option<u32>; 2],
+        t: [Option<u32>; 2],
     ) -> Result<Self, Error> {
         if z > 60 {
             return Err(Error::ZoomLevelOutOfRange { zoom_level: z });
@@ -54,8 +54,21 @@ impl SpaceTimeId {
         let new_y = normalize_dimension(y, 0, xy_max, valid_range_y, z)?;
 
         //時間軸の順番を入れ替え
-        //Todo時間に関する処理を行う
-        //いったん、3次元の処理を優先的に行う
+        //終点はu64::MAXを用いて表現
+        let new_t = if i == 0 {
+            [0, u64::MAX]
+        } else {
+            match t {
+                [None, None] => [0, u64::MAX],
+                [None, Some(e)] => [0, (e as u64) * (i as u64) - 1],
+                [Some(s), None] => [(s as u64) * (i as u64), u64::MAX],
+                [Some(s), Some(e)] => {
+                    let start = s.min(e) as u64;
+                    let end = s.max(e) as u64;
+                    [start * (i as u64), end * (i as u64) - 1]
+                }
+            }
+        };
 
         Ok(SpaceTimeId {
             z,
@@ -63,7 +76,7 @@ impl SpaceTimeId {
             x: new_x,
             y: new_y,
             i,
-            t: [0, u64::MAX],
+            t: new_t,
         })
     }
 }
