@@ -6,7 +6,7 @@ use crate::{
 };
 
 impl SpaceTimeIdSet {
-    pub(crate) fn uncheck_insert(&mut self, f: &BitVec, x: &BitVec, y: &BitVec, t: &Interval) {
+    pub(crate) fn uncheck_insert(&mut self, f: &BitVec, x: &BitVec, y: &BitVec) {
         let index = self.generate_index();
 
         Self::update_layer(&mut self.f, f, index);
@@ -19,7 +19,6 @@ impl SpaceTimeIdSet {
                 f: f.clone(),
                 x: x.clone(),
                 y: y.clone(),
-                t: t.clone(),
             },
         );
     }

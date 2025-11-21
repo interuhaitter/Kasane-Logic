@@ -23,7 +23,6 @@ pub struct ReverseInfo {
     pub f: BitVec,
     pub x: BitVec,
     pub y: BitVec,
-    pub t: Interval,
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]

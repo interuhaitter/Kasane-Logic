@@ -10,17 +10,16 @@ impl SpaceTimeIdSet {
         main: &BitVec,
         a: &BitVec,
         b: &BitVec,
-        t: &Interval,
     ) {
         match dim_select {
             DimensionSelect::F => {
-                self.uncheck_insert(main, a, b, t);
+                self.uncheck_insert(main, a, b);
             }
             DimensionSelect::X => {
-                self.uncheck_insert(a, main, b, t);
+                self.uncheck_insert(a, main, b);
             }
             DimensionSelect::Y => {
-                self.uncheck_insert(a, b, main, t);
+                self.uncheck_insert(a, b, main);
             }
         }
     }
