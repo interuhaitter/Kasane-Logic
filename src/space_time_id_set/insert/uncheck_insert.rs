@@ -25,7 +25,7 @@ impl SpaceTimeIdSet {
 
     ///上位の階層のcountに+1
     fn update_layer(map: &mut BTreeMap<BitVec, LayerInfo>, key: &BitVec, index: usize) {
-        for key_top in key.top_prefix() {
+        for key_top in key.ancestors() {
             if key_top == *key {
                 map.entry(key_top)
                     .and_modify(|v| {

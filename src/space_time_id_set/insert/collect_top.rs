@@ -7,13 +7,16 @@ use crate::{
 
 impl SpaceTimeIdSet {
     /// 与えられた次元において、上位の範囲を収集する
-    pub(crate) fn collect_top(&self, main_bit: &BitVec, main_dim_select: &DimensionSelect) -> Vec<Index> {
-
+    pub(crate) fn collect_top(
+        &self,
+        main_bit: &BitVec,
+        main_dim_select: &DimensionSelect,
+    ) -> Vec<Index> {
         let dims = self.select_dimensions(&main_dim_select);
 
         let mut result = HashSet::new();
 
-        for top in main_bit.top_prefix() {
+        for top in main_bit.ancestors() {
             if let Some(v) = dims.main.get(&top) {
                 result.extend(v.index.iter().copied());
             }

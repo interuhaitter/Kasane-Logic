@@ -1,12 +1,11 @@
 use crate::space_time_id_set::{BTreeMap, HashSet, Index, SpaceTimeIdSet};
-use crate::{
-    bit_vec::BitVec,
-    space_time_id_set::LayerInfo,
-};
+use crate::{bit_vec::BitVec, space_time_id_set::LayerInfo};
 
 impl SpaceTimeIdSet {
     pub(crate) fn uncheck_delete(&mut self, index: &Index) {
-        let removed = self.reverse.remove(index)
+        let removed = self
+            .reverse
+            .remove(index)
             .expect("Internal error: reverse index not found in uncheck_delete");
 
         Self::update_layer_delete(&mut self.f, &removed.f, *index);
@@ -16,7 +15,7 @@ impl SpaceTimeIdSet {
 
     ///上位の階層のcountから-1
     fn update_layer_delete(map: &mut BTreeMap<BitVec, LayerInfo>, key: &BitVec, index: usize) {
-        for key_top in key.top_prefix() {
+        for key_top in key.ancestors() {
             if key_top == *key {
                 map.entry(key_top)
                     .and_modify(|v| {
