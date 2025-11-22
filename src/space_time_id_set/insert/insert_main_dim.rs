@@ -24,6 +24,7 @@ impl SpaceTimeIdSet {
     ) {
         let main_ancestors: Vec<Index> = Self::collect_ancestors(&self, main_bit, &main_dim_select);
 
+        //Main次元において、祖先にも子孫にも重なる範囲が存在しなければ挿入
         if main_ancestors.is_empty() && *main_descendant_count == 0 {
             for ((_, a_bit), (_, b_bit)) in iproduct!(a_encoded, b_encoded) {
                 self.uncheck_insert(main_bit, a_bit, b_bit, &main_dim_select);
@@ -32,42 +33,29 @@ impl SpaceTimeIdSet {
             return;
         }
 
-        let main_top: Vec<Index> = self.collect_under(main_bit, &main_dim_select);
+        //Main次元における子孫のIndexを取得する
+        let main_descendants: Vec<Index> = self.collect_descendants(main_bit, &main_dim_select);
 
-        let mut top_reverse = vec![];
-        for top_index in &main_top {
-            top_reverse.push(
+        //Main次元における子孫を逆引き情報で取得する
+        let mut main_descendants_reverse = vec![];
+        for top_index in &main_descendants {
+            main_descendants_reverse.push(
                 self.reverse
                     .get(&top_index)
                     .expect("Internal error: reverse index not found for top"),
             );
         }
 
-        let mut under_reverse = vec![];
+        //Main次元における祖先のIndexを取得する
+        let mut main_ancestors_reverse = vec![];
+
+        //Main次元における祖先を逆引き情報で取得する
         for under_index in &main_ancestors {
-            under_reverse.push(
+            main_ancestors_reverse.push(
                 self.reverse
                     .get(&*under_index)
                     .expect("Internal error: reverse index not found for under"),
             );
-        }
-
-        let a_dim_select: DimensionSelect;
-        let b_dim_select: DimensionSelect;
-
-        match main_dim_select {
-            DimensionSelect::F => {
-                a_dim_select = DimensionSelect::X;
-                b_dim_select = DimensionSelect::Y;
-            }
-            DimensionSelect::X => {
-                a_dim_select = DimensionSelect::F;
-                b_dim_select = DimensionSelect::Y;
-            }
-            DimensionSelect::Y => {
-                a_dim_select = DimensionSelect::F;
-                b_dim_select = DimensionSelect::X;
-            }
         }
 
         let mut a_relations: Vec<Option<(Vec<BitVecRelation>, Vec<BitVecRelation>)>> = Vec::new();
@@ -76,18 +64,18 @@ impl SpaceTimeIdSet {
         for (_, a_dim) in a_encoded {
             a_relations.push(Self::collect_other_dimension(
                 a_dim,
-                &a_dim_select,
-                &top_reverse,
-                &under_reverse,
+                &main_dim_select.a(),
+                &main_descendants_reverse,
+                &main_ancestors_reverse,
             ));
         }
 
         for (_, b_dim) in b_encoded {
             b_relations.push(Self::collect_other_dimension(
                 b_dim,
-                &b_dim_select,
-                &top_reverse,
-                &under_reverse,
+                &main_dim_select.b(),
+                &main_descendants_reverse,
+                &main_ancestors_reverse,
             ));
         }
 
@@ -136,31 +124,41 @@ impl SpaceTimeIdSet {
             for (i, (a_rel, b_rel)) in a_relation.0.iter().zip(b_relation.0.iter()).enumerate() {
                 match (a_rel, b_rel) {
                     (
-                        BitVecRelation::Greater | BitVecRelation::Equal,
-                        BitVecRelation::Greater | BitVecRelation::Equal,
+                        BitVecRelation::Ancestor | BitVecRelation::Equal,
+                        BitVecRelation::Ancestor | BitVecRelation::Equal,
                     ) => {
-                        need_delete_inside.insert(main_top[i]);
+                        need_delete_inside.insert(main_descendants[i]);
                     }
-                    (BitVecRelation::Greater | BitVecRelation::Equal, BitVecRelation::Less) => {
+                    (
+                        BitVecRelation::Ancestor | BitVecRelation::Equal,
+                        BitVecRelation::Descendant,
+                    ) => {
                         self.top_top_under(
-                            main_top[i],
+                            main_descendants[i],
                             b_encoded[b_encode_index].1.clone(),
-                            &b_dim_select,
+                            &main_dim_select.b(),
                             &mut need_delete_inside,
                             &mut need_insert_inside,
                         );
                     }
-                    (BitVecRelation::Less, BitVecRelation::Greater | BitVecRelation::Equal) => {
+                    (
+                        BitVecRelation::Descendant,
+                        BitVecRelation::Ancestor | BitVecRelation::Equal,
+                    ) => {
                         self.top_top_under(
-                            main_top[i],
+                            main_descendants[i],
                             a_encoded[a_encode_index].1.clone(),
-                            &a_dim_select,
+                            &main_dim_select.a(),
                             &mut need_delete_inside,
                             &mut need_insert_inside,
                         );
                     }
-                    (BitVecRelation::Less, BitVecRelation::Less) => {
-                        self.under_under_top(&mut need_divison, main_top[i], &main_dim_select);
+                    (BitVecRelation::Descendant, BitVecRelation::Descendant) => {
+                        self.under_under_top(
+                            &mut need_divison,
+                            main_descendants[i],
+                            &main_dim_select,
+                        );
                     }
                     _ => {}
                 }
@@ -169,8 +167,8 @@ impl SpaceTimeIdSet {
             for (i, (a_rel, b_rel)) in a_relation.1.iter().zip(b_relation.1.iter()).enumerate() {
                 match (a_rel, b_rel) {
                     (
-                        BitVecRelation::Greater | BitVecRelation::Equal,
-                        BitVecRelation::Greater | BitVecRelation::Equal,
+                        BitVecRelation::Ancestor | BitVecRelation::Equal,
+                        BitVecRelation::Ancestor | BitVecRelation::Equal,
                     ) => {
                         self.top_top_under(
                             main_ancestors[i],
@@ -180,13 +178,27 @@ impl SpaceTimeIdSet {
                             &mut need_insert_inside,
                         );
                     }
-                    (BitVecRelation::Greater | BitVecRelation::Equal, BitVecRelation::Less) => {
-                        self.under_under_top(&mut need_divison, main_ancestors[i], &a_dim_select);
+                    (
+                        BitVecRelation::Ancestor | BitVecRelation::Equal,
+                        BitVecRelation::Descendant,
+                    ) => {
+                        self.under_under_top(
+                            &mut need_divison,
+                            main_ancestors[i],
+                            &main_dim_select.a(),
+                        );
                     }
-                    (BitVecRelation::Less, BitVecRelation::Greater | BitVecRelation::Equal) => {
-                        self.under_under_top(&mut need_divison, main_ancestors[i], &b_dim_select);
+                    (
+                        BitVecRelation::Descendant,
+                        BitVecRelation::Ancestor | BitVecRelation::Equal,
+                    ) => {
+                        self.under_under_top(
+                            &mut need_divison,
+                            main_ancestors[i],
+                            &main_dim_select.b(),
+                        );
                     }
-                    (BitVecRelation::Less, BitVecRelation::Less) => {
+                    (BitVecRelation::Descendant, BitVecRelation::Descendant) => {
                         continue 'outer;
                     }
                     _ => {}

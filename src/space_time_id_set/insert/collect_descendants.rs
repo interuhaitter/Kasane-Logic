@@ -6,8 +6,8 @@ use crate::{
 use std::ops::Bound::Excluded;
 
 impl SpaceTimeIdSet {
-    ///与えられた次元において、下位の範囲を収集する
-    pub(crate) fn collect_under(
+    /// 指定された次元において、自分が含む子孫のインデックスを収集する
+    pub(crate) fn collect_descendants(
         &self,
         main_bit: &BitVec,
         main_dim_select: &DimensionSelect,

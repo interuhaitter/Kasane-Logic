@@ -11,6 +11,24 @@ pub enum DimensionSelect {
     Y,
 }
 
+impl DimensionSelect {
+    pub fn a(&self) -> DimensionSelect {
+        match self {
+            DimensionSelect::F => DimensionSelect::X,
+            DimensionSelect::X => DimensionSelect::F,
+            DimensionSelect::Y => DimensionSelect::F,
+        }
+    }
+
+    pub fn b(&self) -> DimensionSelect {
+        match self {
+            DimensionSelect::F => DimensionSelect::Y,
+            DimensionSelect::X => DimensionSelect::Y,
+            DimensionSelect::Y => DimensionSelect::X,
+        }
+    }
+}
+
 // BTreeMap参照系（BTreeを型名に含める）
 pub struct DimensionBTreeRefs<'a> {
     pub main: &'a BTreeMap<BitVec, LayerInfo>,

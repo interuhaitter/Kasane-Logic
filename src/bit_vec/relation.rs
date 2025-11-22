@@ -1,55 +1,53 @@
 use crate::bit_vec::BitVec;
 
-/// - `Greater`  
-///     - `self` が `other` より大きな範囲である
+/// - `Ancestor`  
+///     - `self` が `other` を包含する上位世代である
 ///
 /// - `Equal`  
-///     - `self` と `other` が表す範囲が等価である
+///     - `self` と `other` が同じ世代・範囲である
 ///
-/// - `Less`  
-///     - `self` が `other` より小さな範囲である
+/// - `Descendant`  
+///     - `self` が `other` の下位世代である
 ///
 /// - `Unrelated`  
-///     - `self` と `other` に重なりがない
+///     - `self` と `other` に世代的な包含関係がない
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BitVecRelation {
-    /// `self` が `other` より大きな範囲である
-    Greater,
+    /// self が other を包含する上位世代
+    Ancestor,
 
-    /// `self` と `other` が表す範囲が等価である
+    /// self と other が同じ世代・範囲
     Equal,
 
-    /// `self` が `other` より小さな範囲である
-    Less,
+    /// self が other の下位世代
+    Descendant,
 
-    /// `self` と `other` に重なりがない
+    /// 世代的に無関係
     Unrelated,
 }
 
 impl BitVec {
-    /// `self` と `other` の prefix-range 関係を評価して返す。
+    /// self と other の世代（ancestor/descendant）関係を返す
     pub fn relation(&self, other: &Self) -> BitVecRelation {
         let self_upper = self.upper_bound();
         let other_upper = other.upper_bound();
 
-        // Equal: 完全一致
+        // Same: 完全一致
         if self == other {
             return BitVecRelation::Equal;
         }
 
-        // Greater: self が other を包含している
-        // other ∈ [self, self_upper)
+        // Ancestor: self が other を包含
         if self < other && other < &self_upper {
-            return BitVecRelation::Greater;
+            return BitVecRelation::Ancestor;
         }
 
-        // Less: other が self を包含している
-        // self ∈ [other, other_upper)
+        // Descendant: self が other の下位
         if other < self && self < &other_upper {
-            return BitVecRelation::Less;
+            return BitVecRelation::Descendant;
         }
 
-        // 上記以外は交差なし
+        // それ以外は無関係
         BitVecRelation::Unrelated
     }
 }
