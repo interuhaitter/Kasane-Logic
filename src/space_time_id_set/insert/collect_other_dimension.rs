@@ -1,58 +1,58 @@
 use crate::{
     bit_vec::{BitVec, relation::BitVecRelation},
     encode_id::EncodeID,
-    space_time_id_set::{SpaceTimeIDSet, insert::select_dimensions::DimensionSelect},
+    space_time_id_set::{EncodeIDSet, insert::select_dimensions::DimensionSelect},
 };
 
-impl SpaceTimeIDSet {
+impl EncodeIDSet {
     pub(crate) fn collect_other_dimension(
-        dim: &BitVec,
+        main: &BitVec,
+        main_ancestors_reverse: &Vec<&EncodeID>,
+        main_descendants_reverse: &Vec<&EncodeID>,
         dim_select: &DimensionSelect,
-        top_reverse: &Vec<&EncodeID>,
-        under_reverse: &Vec<&EncodeID>,
     ) -> Option<(Vec<BitVecRelation>, Vec<BitVecRelation>)> {
-        let mut top_unrelated = true;
-        let mut under_unrelated = true;
+        let mut ancestors_unrelated = true;
+        let mut descendants_unrelated = true;
 
-        let mut top_relation: Vec<BitVecRelation> = Vec::new();
-        let mut under_relation: Vec<BitVecRelation> = Vec::new();
+        let mut main_ancestor_relation: Vec<BitVecRelation> = Vec::new();
+        let mut main_descendants_relation: Vec<BitVecRelation> = Vec::new();
 
-        for top in top_reverse {
+        for ancestor in main_ancestors_reverse {
             let target = match dim_select {
-                DimensionSelect::F => &top.f,
-                DimensionSelect::X => &top.x,
-                DimensionSelect::Y => &top.y,
+                DimensionSelect::F => &ancestor.f,
+                DimensionSelect::X => &ancestor.x,
+                DimensionSelect::Y => &ancestor.y,
             };
 
-            let relation = dim.relation(target);
+            let relation = main.relation(target);
 
             if relation != BitVecRelation::Unrelated {
-                top_unrelated = false;
+                ancestors_unrelated = false;
             }
 
-            top_relation.push(relation);
+            main_ancestor_relation.push(relation);
         }
 
-        for under in under_reverse {
+        for descendant in main_descendants_reverse {
             let target = match dim_select {
-                DimensionSelect::F => &under.f,
-                DimensionSelect::X => &under.x,
-                DimensionSelect::Y => &under.y,
+                DimensionSelect::F => &descendant.f,
+                DimensionSelect::X => &descendant.x,
+                DimensionSelect::Y => &descendant.y,
             };
 
-            let relation = dim.relation(target);
+            let relation = main.relation(target);
 
             if relation != BitVecRelation::Unrelated {
-                under_unrelated = false;
+                descendants_unrelated = false;
             }
 
-            under_relation.push(relation);
+            main_descendants_relation.push(relation);
         }
 
-        if top_unrelated && under_unrelated {
+        if ancestors_unrelated && descendants_unrelated {
             return None;
         } else {
-            return Some((top_relation, under_relation));
+            return Some((main_ancestor_relation, main_descendants_relation));
         }
     }
 }

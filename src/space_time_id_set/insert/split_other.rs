@@ -3,15 +3,15 @@ use std::collections::HashSet;
 use crate::{
     bit_vec::BitVec,
     encode_id::EncodeID,
-    space_time_id_set::{Index, SpaceTimeIDSet, insert::select_dimensions::DimensionSelect},
+    space_time_id_set::{EncodeIDSet, Index, insert::select_dimensions::DimensionSelect},
 };
 
-impl SpaceTimeIDSet {
+impl EncodeIDSet {
     ///上位,上位,下位の場合に相手を切断する
     pub(crate) fn split_other(
         &mut self,
         target_index: Index,
-        target_bit: BitVec,
+        target_bit: &BitVec,
         target_dim: &DimensionSelect,
         need_delete: &mut HashSet<Index>,
         need_insert: &mut HashSet<EncodeID>,
@@ -21,11 +21,17 @@ impl SpaceTimeIDSet {
             .get(&target_index)
             .expect("Internal error: reverse index not found in top_top_under");
 
+        println!("{:?}", reverse);
+        println!("{:?}", target_dim);
+
         let top = match target_dim {
             DimensionSelect::F => reverse.f.clone(),
             DimensionSelect::X => reverse.x.clone(),
             DimensionSelect::Y => reverse.y.clone(),
         };
+
+        println!("TOP:{}", top);
+        println!("TAR:{}", target_bit);
 
         let splited = top.subtract_range(&target_bit);
 

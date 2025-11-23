@@ -2,9 +2,10 @@ use std::collections::BTreeMap;
 
 use crate::{
     bit_vec::BitVec,
-    space_time_id_set::{LayerInfo, SpaceTimeIDSet},
+    space_time_id_set::{EncodeIDSet, LayerInfo},
 };
 
+#[derive(Debug)]
 pub enum DimensionSelect {
     F,
     X,
@@ -61,7 +62,7 @@ pub struct MapDimsMutRefs<'a, T> {
     pub y: &'a mut T,
 }
 
-impl SpaceTimeIDSet {
+impl EncodeIDSet {
     // BTreeMap参照
     pub fn dims_btree(&self, main_dim_select: &DimensionSelect) -> DimensionBTreeRefs<'_> {
         match main_dim_select {

@@ -17,6 +17,7 @@ impl SpaceTimeID {
     pub fn to_encode(&self) -> Vec<EncodeID> {
         let mut result = vec![];
 
+        println!("Call To Encode");
         //セグメントに区切る
         let f_splited = segment_f(self.z, self.f);
         let x_splited = segment_xy(self.z, self.x);

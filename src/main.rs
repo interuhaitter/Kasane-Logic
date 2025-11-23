@@ -1,9 +1,9 @@
 use std::{collections::HashSet, fs::File};
 
-use kasane_logic::{space_time_id::SpaceTimeID, space_time_id_set::SpaceTimeIDSet};
+use kasane_logic::{encode_id, space_time_id::SpaceTimeID, space_time_id_set::EncodeIDSet};
 use std::io::Write;
 fn main() {
-    let mut set = SpaceTimeIDSet::new();
+    let mut set = EncodeIDSet::new();
 
     let id1 = SpaceTimeID::new(5, [-1, 10], [2, 10], [5, 10], 10, [10, 40]).unwrap();
     let id2 = SpaceTimeID::new(4, [-1, 10], [2, 10], [5, 10], 10, [10, 40]).unwrap();
@@ -13,13 +13,25 @@ fn main() {
 
     let mut file2 = File::create("output_debug.txt").expect("cannot create file");
 
-    set.insert(id1);
-    set.insert(id2);
-    set.insert(id3);
-
     println!("{},", id1);
     println!("{},", id2);
     println!("{},", id3);
+
+    id1.to_encode().iter().for_each(|encode_id| {
+        set.insert(encode_id.clone());
+    });
+
+    println!("-------------");
+
+    id2.to_encode().iter().for_each(|encode_id| {
+        set.insert(encode_id.clone());
+    });
+    println!("-------------");
+
+    id3.to_encode().iter().for_each(|encode_id| {
+        set.insert(encode_id.clone());
+    });
+    println!("-------------");
 
     for ele in set.iter() {
         writeln!(file1, "{},", ele).expect("cannot write to file");

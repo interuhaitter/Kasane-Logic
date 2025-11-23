@@ -6,9 +6,9 @@ use crate::{bit_vec::BitVec, encode_id::EncodeID};
 type Index = usize;
 
 pub mod insert;
-pub mod intersection;
+// pub mod intersection;
 pub mod iterator;
-pub mod union;
+// pub mod union;
 
 /// 階層ごとの情報を保持する構造体
 #[derive(Debug, Clone)]
@@ -20,19 +20,12 @@ pub struct LayerInfo {
     pub count: usize,
 }
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub struct Interval {
-    pub t1: u64,
-    pub t2: u64,
-    pub i: u32,
-}
-
 /// 時空間IDの集合を効率的に管理するデータ構造
 ///
 /// 重複する範囲を自動的に統合し、階層構造を用いて効率的に格納する。
 /// 公開APIは`insert`と`get_all`のみ。
 #[derive(Debug, Clone)]
-pub struct SpaceTimeIDSet {
+pub struct EncodeIDSet {
     //各次元の範囲を保存するためのBTreeMap
     f: BTreeMap<BitVec, LayerInfo>,
     x: BTreeMap<BitVec, LayerInfo>,
@@ -40,7 +33,7 @@ pub struct SpaceTimeIDSet {
     index: usize,
     reverse: HashMap<Index, EncodeID>,
 }
-impl SpaceTimeIDSet {
+impl EncodeIDSet {
     /// 新しい空の時空間ID集合を作成
     pub fn new() -> Self {
         Self {

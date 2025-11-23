@@ -1,36 +1,36 @@
 use crate::{
     bit_vec::BitVec,
-    space_time_id_set::{Index, SpaceTimeIDSet, insert::select_dimensions::DimensionSelect},
+    space_time_id_set::{EncodeIDSet, Index, insert::select_dimensions::DimensionSelect},
 };
 #[derive(Debug)]
 pub struct RangesCollect {
-    pub main: Vec<BitVec>,
-    pub a: Vec<BitVec>,
-    pub b: Vec<BitVec>,
+    pub f: Vec<BitVec>,
+    pub x: Vec<BitVec>,
+    pub y: Vec<BitVec>,
 }
 
-impl SpaceTimeIDSet {
+impl EncodeIDSet {
     ///下位,下位,上位の場合に自身を切断する
     pub(crate) fn split_self(
         &self,
         divison_collect: &mut RangesCollect,
         target_index: Index,
-        target_dim_select: &DimensionSelect,
+        target_dim: &DimensionSelect,
     ) {
         let reverse = self
             .reverse
             .get(&target_index)
             .expect("Internal error: reverse index not found in under_under_top");
 
-        match target_dim_select {
+        match target_dim {
             DimensionSelect::F => {
-                divison_collect.main.push(reverse.f.clone());
+                divison_collect.f.push(reverse.f.clone());
             }
             DimensionSelect::X => {
-                divison_collect.main.push(reverse.x.clone());
+                divison_collect.x.push(reverse.x.clone());
             }
             DimensionSelect::Y => {
-                divison_collect.main.push(reverse.y.clone());
+                divison_collect.y.push(reverse.y.clone());
             }
         }
     }

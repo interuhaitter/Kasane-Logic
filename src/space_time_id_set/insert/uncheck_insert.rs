@@ -3,33 +3,18 @@ use std::collections::{BTreeMap, HashSet};
 use crate::{
     bit_vec::BitVec,
     encode_id::EncodeID,
-    space_time_id_set::{LayerInfo, SpaceTimeIDSet, insert::select_dimensions::DimensionSelect},
+    space_time_id_set::{EncodeIDSet, LayerInfo},
 };
 
-impl SpaceTimeIDSet {
-    pub(crate) fn uncheck_insert(
-        &mut self,
-        main: &BitVec,
-        a: &BitVec,
-        b: &BitVec,
-        main_dim_select: &DimensionSelect,
-    ) {
+impl EncodeIDSet {
+    pub(crate) fn uncheck_insert(&mut self, encode_id: EncodeID) {
         let index = self.generate_index();
-        let mut dims = self.dims_btree_mut(main_dim_select);
-        let map = Self::map_dims(main, a, b, main_dim_select);
 
-        Self::update_layer(&mut dims.main, main, index);
-        Self::update_layer(&mut dims.a, a, index);
-        Self::update_layer(&mut dims.b, b, index);
+        Self::update_layer(&mut self.f, &encode_id.f, index);
+        Self::update_layer(&mut self.x, &encode_id.x, index);
+        Self::update_layer(&mut self.y, &encode_id.y, index);
 
-        self.reverse.insert(
-            index,
-            EncodeID {
-                f: map.f.clone(),
-                x: map.x.clone(),
-                y: map.y.clone(),
-            },
-        );
+        self.reverse.insert(index, encode_id);
     }
 
     ///上位の階層のcountに+1
