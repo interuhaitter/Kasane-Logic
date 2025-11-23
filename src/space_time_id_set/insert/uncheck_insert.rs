@@ -3,11 +3,11 @@ use std::collections::{BTreeMap, HashSet};
 use crate::{
     bit_vec::BitVec,
     space_time_id_set::{
-        LayerInfo, ReverseInfo, SpaceTimeIdSet, insert::select_dimensions::DimensionSelect,
+        LayerInfo, ReverseInfo, SpaceTimeIDSet, insert::select_dimensions::DimensionSelect,
     },
 };
 
-impl SpaceTimeIdSet {
+impl SpaceTimeIDSet {
     pub(crate) fn uncheck_insert(
         &mut self,
         main: &BitVec,

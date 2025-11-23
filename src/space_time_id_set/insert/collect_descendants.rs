@@ -1,11 +1,11 @@
 use crate::{
     bit_vec::BitVec,
-    space_time_id_set::{Index, SpaceTimeIdSet, insert::select_dimensions::DimensionSelect},
+    space_time_id_set::{Index, SpaceTimeIDSet, insert::select_dimensions::DimensionSelect},
 };
 
 use std::ops::Bound::Excluded;
 
-impl SpaceTimeIdSet {
+impl SpaceTimeIDSet {
     /// 指定された次元において、自分が含む子孫のインデックスを収集する
     pub(crate) fn collect_descendants(
         &self,

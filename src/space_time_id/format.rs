@@ -1,8 +1,8 @@
 use core::fmt;
 
-use crate::space_time_id::SpaceTimeId;
+use crate::space_time_id::SpaceTimeID;
 
-impl fmt::Display for SpaceTimeId {
+impl fmt::Display for SpaceTimeID {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,

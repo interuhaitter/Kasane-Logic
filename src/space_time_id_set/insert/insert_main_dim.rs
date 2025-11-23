@@ -5,12 +5,12 @@ use itertools::iproduct;
 use crate::{
     bit_vec::{BitVec, relation::BitVecRelation},
     space_time_id_set::{
-        Index, ReverseInfo, SpaceTimeIdSet,
+        Index, ReverseInfo, SpaceTimeIDSet,
         insert::{select_dimensions::DimensionSelect, split_self::RangesCollect},
     },
 };
 
-impl SpaceTimeIdSet {
+impl SpaceTimeIDSet {
     /// 代表次元×他の次元を挿入処理する
     pub(crate) fn insert_main_dim(
         &mut self,

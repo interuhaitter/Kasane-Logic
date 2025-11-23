@@ -2,10 +2,10 @@ use std::collections::HashSet;
 
 use crate::{
     bit_vec::BitVec,
-    space_time_id_set::{Index, SpaceTimeIdSet, insert::select_dimensions::DimensionSelect},
+    space_time_id_set::{Index, SpaceTimeIDSet, insert::select_dimensions::DimensionSelect},
 };
 
-impl SpaceTimeIdSet {
+impl SpaceTimeIDSet {
     /// 指定された次元において、自分を含む祖先のインデックスを収集する
     pub(crate) fn collect_ancestors(
         &self,

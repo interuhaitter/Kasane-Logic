@@ -4,18 +4,18 @@
 //!
 //! ## 主要な機能
 //!
-//! - `SpaceTimeId`: 時空間IDの定義と操作
-//! - `SpaceTimeIdSet`: 時空間IDの集合を効率的に管理
+//! - `SpaceTimeID`: 時空間IDの定義と操作
+//! - `SpaceTimeIDSet`: 時空間IDの集合を効率的に管理
 //! - `Point`: 座標系の変換（緯度経度高度 ⇔ ECEF）
 //! - `function`: 幾何形状（点、線、三角形）から時空間IDを生成
 //!
 //! ## 使用例
 //!
 //! ```no_run
-//! use kasane_logic::space_time_id_set::SpaceTimeIdSet;
+//! use kasane_logic::space_time_id_set::SpaceTimeIDSet;
 //! use kasane_logic::point::{Point, Coordinate};
 //!
-//! let mut set = SpaceTimeIdSet::new();
+//! let mut set = SpaceTimeIDSet::new();
 //! let point = Point::Coordinate(Coordinate {
 //!     latitude: 35.6809,
 //!     longitude: 139.7673,

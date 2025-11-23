@@ -1,10 +1,10 @@
 use crate::{
     point::{ECEF, Point},
-    space_time_id::SpaceTimeId,
+    space_time_id::SpaceTimeID,
 };
 use std::{collections::HashSet, f64::consts::PI};
 
-pub fn triangle(z: u8, a: Point, b: Point, c: Point) -> HashSet<SpaceTimeId> {
+pub fn triangle(z: u8, a: Point, b: Point, c: Point) -> HashSet<SpaceTimeID> {
     let ecef_a = a.to_ecef();
     let ecef_b = b.to_ecef();
     let ecef_c = c.to_ecef();

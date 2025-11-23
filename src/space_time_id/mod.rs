@@ -14,7 +14,7 @@ use crate::error::Error;
 /// - i: インデックス
 /// - t: 時間範囲
 #[derive(Serialize, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct SpaceTimeId {
+pub struct SpaceTimeID {
     pub(crate) z: u8,
     pub(crate) f: [i64; 2],
     pub(crate) x: [u64; 2],
@@ -22,7 +22,7 @@ pub struct SpaceTimeId {
     pub(crate) i: u64,
     pub(crate) t: [u64; 2],
 }
-impl SpaceTimeId {
+impl SpaceTimeID {
     pub fn new(
         z: u8,
         f: [i64; 2],
@@ -52,7 +52,7 @@ impl SpaceTimeId {
             .checked_mul(i)
             .ok_or_else(|| Error::TimeOverflow { t: t[1], i })?;
 
-        Ok(SpaceTimeId {
+        Ok(SpaceTimeID {
             z,
             f: new_f,
             x: new_x,

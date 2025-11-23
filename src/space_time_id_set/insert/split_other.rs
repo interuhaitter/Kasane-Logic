@@ -3,11 +3,11 @@ use std::collections::HashSet;
 use crate::{
     bit_vec::BitVec,
     space_time_id_set::{
-        Index, ReverseInfo, SpaceTimeIdSet, insert::select_dimensions::DimensionSelect,
+        Index, ReverseInfo, SpaceTimeIDSet, insert::select_dimensions::DimensionSelect,
     },
 };
 
-impl SpaceTimeIdSet {
+impl SpaceTimeIDSet {
     ///上位,上位,下位の場合に相手を切断する
     pub(crate) fn split_other(
         &mut self,

@@ -1,25 +1,25 @@
 use crate::{
-    space_time_id::SpaceTimeId,
+    space_time_id::SpaceTimeID,
     space_time_id_set::{
-        ReverseInfo, SpaceTimeIdSet,
+        ReverseInfo, SpaceTimeIDSet,
         single::{invert_bitvec_f::invert_bitmask_f, invert_bitvec_xy::invert_bitmask_xy},
     },
 };
 
-pub struct SpaceTimeIdSetIter<'a> {
+pub struct SpaceTimeIDSetIter<'a> {
     reverse_iter: std::collections::hash_map::Iter<'a, usize, ReverseInfo>,
 }
 
-impl SpaceTimeIdSet {
-    pub fn iter(&'_ self) -> SpaceTimeIdSetIter<'_> {
-        SpaceTimeIdSetIter {
+impl SpaceTimeIDSet {
+    pub fn iter(&'_ self) -> SpaceTimeIDSetIter<'_> {
+        SpaceTimeIDSetIter {
             reverse_iter: self.reverse.iter(),
         }
     }
 }
 
-impl<'a> Iterator for SpaceTimeIdSetIter<'a> {
-    type Item = SpaceTimeId;
+impl<'a> Iterator for SpaceTimeIDSetIter<'a> {
+    type Item = SpaceTimeID;
 
     fn next(&mut self) -> Option<Self::Item> {
         let (_index, reverse) = self.reverse_iter.next()?; // <-- ここが(usize, ReverseInfo)
@@ -51,7 +51,7 @@ impl<'a> Iterator for SpaceTimeIdSetIter<'a> {
             [y_v * k, (y_v + 1) * k - 1]
         };
 
-        Some(SpaceTimeId {
+        Some(SpaceTimeID {
             z: max_z,
             f,
             x,
@@ -62,16 +62,16 @@ impl<'a> Iterator for SpaceTimeIdSetIter<'a> {
     }
 }
 
-impl<'a> IntoIterator for &'a SpaceTimeIdSet {
-    type Item = SpaceTimeId;
-    type IntoIter = SpaceTimeIdSetIter<'a>;
+impl<'a> IntoIterator for &'a SpaceTimeIDSet {
+    type Item = SpaceTimeID;
+    type IntoIter = SpaceTimeIDSetIter<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
 }
 
-impl<'a> ExactSizeIterator for SpaceTimeIdSetIter<'a> {
+impl<'a> ExactSizeIterator for SpaceTimeIDSetIter<'a> {
     fn len(&self) -> usize {
         self.reverse_iter.len()
     }

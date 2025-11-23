@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::{error::Error, space_time_id::SpaceTimeId};
+use crate::{error::Error, space_time_id::SpaceTimeID};
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, TS)]
 pub enum Point {
@@ -25,7 +25,6 @@ impl Point {
         }
     }
 }
-
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
 pub struct Coordinate {
@@ -88,7 +87,7 @@ impl ECEF {
     }
 
     /// 指定されたズームレベルで時空間IDに変換（ECEF版）
-    pub fn to_id(&self, z: u8) -> SpaceTimeId {
+    pub fn to_id(&self, z: u8) -> SpaceTimeID {
         self.to_coordinate().to_id(z)
     }
 }
@@ -146,7 +145,7 @@ impl Coordinate {
     }
 
     /// 指定されたズームレベルで時空間IDに変換（Coordinate版）
-    pub fn to_id(&self, z: u8) -> SpaceTimeId {
+    pub fn to_id(&self, z: u8) -> SpaceTimeID {
         let lat = self.latitude;
         let lon = self.longitude;
         let alt = self.altitude;
@@ -165,7 +164,7 @@ impl Coordinate {
             * n)
             .floor() as u64;
 
-        SpaceTimeId {
+        SpaceTimeID {
             z,
             f: [f_id, f_id],
             x: [x_id, x_id],

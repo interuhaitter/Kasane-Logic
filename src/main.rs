@@ -1,13 +1,13 @@
 use std::{collections::HashSet, fs::File};
 
-use kasane_logic::{space_time_id::SpaceTimeId, space_time_id_set::SpaceTimeIdSet};
+use kasane_logic::{space_time_id::SpaceTimeID, space_time_id_set::SpaceTimeIDSet};
 use std::io::Write;
 fn main() {
-    let mut set = SpaceTimeIdSet::new();
+    let mut set = SpaceTimeIDSet::new();
 
-    let id1 = SpaceTimeId::new(5, [-1, 10], [2, 10], [5, 10], 10, [10, 40]).unwrap();
-    let id2 = SpaceTimeId::new(4, [-1, 10], [2, 10], [5, 10], 10, [10, 40]).unwrap();
-    let id3 = SpaceTimeId::new(1, [1, 1], [1, 1], [1, 1], 10, [10, 40]).unwrap();
+    let id1 = SpaceTimeID::new(5, [-1, 10], [2, 10], [5, 10], 10, [10, 40]).unwrap();
+    let id2 = SpaceTimeID::new(4, [-1, 10], [2, 10], [5, 10], 10, [10, 40]).unwrap();
+    let id3 = SpaceTimeID::new(1, [1, 1], [1, 1], [1, 1], 10, [10, 40]).unwrap();
 
     let mut file1 = File::create("output.txt").expect("cannot create file");
 

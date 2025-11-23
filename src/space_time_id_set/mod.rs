@@ -41,7 +41,7 @@ pub struct Interval {
 /// 重複する範囲を自動的に統合し、階層構造を用いて効率的に格納する。
 /// 公開APIは`insert`と`get_all`のみ。
 #[derive(Debug, Clone)]
-pub struct SpaceTimeIdSet {
+pub struct SpaceTimeIDSet {
     //各次元の範囲を保存するためのBTreeMap
     f: BTreeMap<BitVec, LayerInfo>,
     x: BTreeMap<BitVec, LayerInfo>,
@@ -49,7 +49,7 @@ pub struct SpaceTimeIdSet {
     index: usize,
     reverse: HashMap<Index, ReverseInfo>,
 }
-impl SpaceTimeIdSet {
+impl SpaceTimeIDSet {
     /// 新しい空の時空間ID集合を作成
     pub fn new() -> Self {
         Self {

@@ -1,10 +1,8 @@
-use std::process::id;
-
 use crate::{
     bit_vec::BitVec,
-    space_time_id::SpaceTimeId,
+    space_time_id::SpaceTimeID,
     space_time_id_set::{
-        SpaceTimeIdSet,
+        SpaceTimeIDSet,
         insert::select_dimensions::DimensionSelect,
         single::{
             convert_bitvec_f::convert_bitmask_f, convert_bitvec_xy::convert_bitmask_xy,
@@ -23,10 +21,10 @@ pub mod split_self;
 pub mod uncheck_delete;
 pub mod uncheck_insert;
 
-impl SpaceTimeIdSet {
+impl SpaceTimeIDSet {
     ///SpaceTimeIDSetに新規のIDを挿入する。
     /// 既存の範囲と重複がある場合は挿入時に調整が行われ、重複が排除される。
-    pub fn insert(&mut self, id: SpaceTimeId) {
+    pub fn insert(&mut self, id: SpaceTimeID) {
         let f_splited = convert_f(id.z, id.f);
         let x_splited = convert_xy(id.z, id.x);
         let y_splited = convert_xy(id.z, id.y);

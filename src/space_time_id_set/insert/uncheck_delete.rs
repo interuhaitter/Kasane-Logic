@@ -1,7 +1,7 @@
-use crate::space_time_id_set::{BTreeMap, HashSet, Index, SpaceTimeIdSet};
+use crate::space_time_id_set::{BTreeMap, HashSet, Index, SpaceTimeIDSet};
 use crate::{bit_vec::BitVec, space_time_id_set::LayerInfo};
 
-impl SpaceTimeIdSet {
+impl SpaceTimeIDSet {
     pub(crate) fn uncheck_delete(&mut self, index: &Index) {
         let removed = self
             .reverse
