@@ -6,8 +6,12 @@ pub(crate) fn invert_bitmask_f(bitmask: &BitVec) -> (u8, i64) {
     let (z, f) = invert_bitmask_xy(bitmask);
 
     //仮に負の範囲の場合
-    if *bitmask.0.first()
-        .expect("Internal error: BitVec is empty in invert_bitmask_f") >= 0b11000000 {
+    if *bitmask
+        .0
+        .first()
+        .expect("Internal error: BitVec is empty in invert_bitmask_f")
+        >= 0b11000000
+    {
         return (z, -(f as i64) + 2_i64.pow(z.into()));
     } else {
         return (z, f as i64);

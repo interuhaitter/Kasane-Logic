@@ -1,14 +1,13 @@
 use crate::{
     bit_vec::BitVec,
-    space_time_id::SpaceTimeID,
-    space_time_id_set::{
-        SpaceTimeIDSet,
-        insert::select_dimensions::DimensionSelect,
-        single::{
-            convert_bitvec_f::convert_bitmask_f, convert_bitvec_xy::convert_bitmask_xy,
-            convert_single_f::convert_f, convert_single_xy::convert_xy,
+    space_time_id::{
+        SpaceTimeID,
+        encode::{
+            into_bitvec::{into_bitvec_f, into_bitvec_xy},
+            segment::{segment_f, segment_xy},
         },
     },
+    space_time_id_set::{SpaceTimeIDSet, insert::select_dimensions::DimensionSelect},
 };
 pub mod collect_ancestors;
 pub mod collect_descendants;
@@ -25,14 +24,14 @@ impl SpaceTimeIDSet {
     ///SpaceTimeIDSetに新規のIDを挿入する。
     /// 既存の範囲と重複がある場合は挿入時に調整が行われ、重複が排除される。
     pub fn insert(&mut self, id: SpaceTimeID) {
-        let f_splited = convert_f(id.z, id.f);
-        let x_splited = convert_xy(id.z, id.x);
-        let y_splited = convert_xy(id.z, id.y);
+        let f_splited = segment_f(id.z, id.f);
+        let x_splited = segment_xy(id.z, id.x);
+        let y_splited = segment_xy(id.z, id.y);
 
         let mut f_encoded: Vec<(usize, BitVec)> = f_splited
             .iter()
             .map(|(z, f)| {
-                let bit_vec = convert_bitmask_f(*z, *f);
+                let bit_vec = into_bitvec_f(*z, *f);
                 let count = self.f.get(&bit_vec).map_or(0, |v| v.count);
                 (count, bit_vec)
             })
@@ -41,7 +40,7 @@ impl SpaceTimeIDSet {
         let mut x_encoded: Vec<(usize, BitVec)> = x_splited
             .iter()
             .map(|(z, x)| {
-                let bit_vec = convert_bitmask_xy(*z, *x);
+                let bit_vec = into_bitvec_xy(*z, *x);
                 let count = self.x.get(&bit_vec).map_or(0, |v| v.count);
                 (count, bit_vec)
             })
@@ -50,7 +49,7 @@ impl SpaceTimeIDSet {
         let mut y_encoded: Vec<(usize, BitVec)> = y_splited
             .iter()
             .map(|(z, y)| {
-                let bit_vec = convert_bitmask_xy(*z, *y);
+                let bit_vec = into_bitvec_xy(*z, *y);
                 let count = self.y.get(&bit_vec).map_or(0, |v| v.count);
                 (count, bit_vec)
             })

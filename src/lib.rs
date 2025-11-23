@@ -42,3 +42,5 @@ pub mod space_time_id;
 
 /// 時空間IDの集合を効率的に管理
 pub mod space_time_id_set;
+
+pub mod encode_id;

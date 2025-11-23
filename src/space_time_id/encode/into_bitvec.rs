@@ -1,6 +1,6 @@
 use crate::bit_vec::BitVec;
 
-pub(crate) fn convert_bitmask_xy(z: u8, xy: u64) -> BitVec {
+pub(crate) fn into_bitvec_xy(z: u8, xy: u64) -> BitVec {
     let length = ((z * 2 / 8) + 1).max(1) as usize;
     let mut result = vec![0u8; length];
 
@@ -28,4 +28,23 @@ pub(crate) fn convert_bitmask_xy(z: u8, xy: u64) -> BitVec {
 
     let result = BitVec::from_vec(result);
     result
+}
+
+///FをBitVecに変換する
+pub fn into_bitvec_f(z: u8, f: i64) -> BitVec {
+    if f >= 0 {
+        into_bitvec_xy(z, f as u64)
+    } else {
+        let u = if f == i64::MIN {
+            (i64::MAX as u64) + 1
+        } else {
+            f.abs() as u64
+        };
+
+        let mut converted = into_bitvec_xy(z, u);
+        let masked: u8 = 0b11000000;
+        converted.0[0] |= masked;
+
+        converted
+    }
 }

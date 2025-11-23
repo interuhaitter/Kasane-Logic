@@ -1,7 +1,7 @@
 use serde::Serialize;
+pub mod encode;
 pub mod format;
 pub mod random;
-
 use crate::error::Error;
 
 /// 時空間ID（4次元：3次元空間+時間）
