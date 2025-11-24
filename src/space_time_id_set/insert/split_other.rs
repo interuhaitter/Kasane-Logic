@@ -21,9 +21,6 @@ impl EncodeIDSet {
             .get(&target_index)
             .expect("Internal error: reverse index not found in top_top_under");
 
-        println!("{:?}", reverse);
-        println!("{:?}", target_dim);
-
         let top = match target_dim {
             DimensionSelect::F => reverse.f.clone(),
             DimensionSelect::X => reverse.x.clone(),
@@ -34,6 +31,8 @@ impl EncodeIDSet {
         println!("TAR:{}", target_bit);
 
         let splited = top.subtract_range(&target_bit);
+
+        println!("SPLITED");
 
         let reverse_f = reverse.f.clone();
         let reverse_x = reverse.x.clone();

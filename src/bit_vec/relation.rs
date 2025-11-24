@@ -13,13 +13,13 @@ use crate::bit_vec::BitVec;
 ///     - `self` と `other` は無関係
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BitVecRelation {
-    /// self が other を包含する上位範囲
+    /// self が other を包含する
     Ancestor,
 
     /// self と other が同じ範囲
     Equal,
 
-    /// self が other の下位範囲
+    /// other が self を包含する
     Descendant,
 
     /// 無関係
