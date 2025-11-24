@@ -140,8 +140,8 @@ impl EncodeIDSet {
         for (i, (a_rel, b_rel)) in a_relation.0.iter().zip(b_relation.0.iter()).enumerate() {
             match (a_rel, b_rel) {
                 (
-                    BitVecRelation::Ancestor | BitVecRelation::Equal,
-                    BitVecRelation::Ancestor | BitVecRelation::Equal,
+                    BitVecRelation::Descendant | BitVecRelation::Equal,
+                    BitVecRelation::Descendant | BitVecRelation::Equal,
                 ) => {
                     self.split_other(
                         main_ancestors[i],
@@ -151,21 +151,21 @@ impl EncodeIDSet {
                         &mut need_insert,
                     );
                 }
-                (BitVecRelation::Ancestor | BitVecRelation::Equal, BitVecRelation::Descendant) => {
+                (BitVecRelation::Descendant | BitVecRelation::Equal, BitVecRelation::Ancestor) => {
                     self.split_self(
                         &mut collect_divison_ranges,
                         main_ancestors[i],
                         &main_dim.a(),
                     );
                 }
-                (BitVecRelation::Descendant, BitVecRelation::Ancestor | BitVecRelation::Equal) => {
+                (BitVecRelation::Ancestor, BitVecRelation::Descendant | BitVecRelation::Equal) => {
                     self.split_self(
                         &mut collect_divison_ranges,
                         main_ancestors[i],
                         &main_dim.b(),
                     );
                 }
-                (BitVecRelation::Descendant, BitVecRelation::Descendant) => {
+                (BitVecRelation::Ancestor, BitVecRelation::Ancestor) => {
                     //全ての次元において祖先のIDが存在するため、何もする必要がない
                     return;
                 }
@@ -177,13 +177,13 @@ impl EncodeIDSet {
         for (i, (a_rel, b_rel)) in a_relation.1.iter().zip(b_relation.1.iter()).enumerate() {
             match (a_rel, b_rel) {
                 (
-                    BitVecRelation::Ancestor | BitVecRelation::Equal,
-                    BitVecRelation::Ancestor | BitVecRelation::Equal,
+                    BitVecRelation::Descendant | BitVecRelation::Equal,
+                    BitVecRelation::Descendant | BitVecRelation::Equal,
                 ) => {
                     //全ての次元において子孫のIDが存在するため削除
                     need_delete.insert(main_descendants[i]);
                 }
-                (BitVecRelation::Ancestor | BitVecRelation::Equal, BitVecRelation::Descendant) => {
+                (BitVecRelation::Descendant | BitVecRelation::Equal, BitVecRelation::Ancestor) => {
                     self.split_other(
                         main_descendants[i],
                         b,
@@ -192,7 +192,7 @@ impl EncodeIDSet {
                         &mut need_insert,
                     );
                 }
-                (BitVecRelation::Descendant, BitVecRelation::Ancestor | BitVecRelation::Equal) => {
+                (BitVecRelation::Ancestor, BitVecRelation::Descendant | BitVecRelation::Equal) => {
                     self.split_other(
                         main_descendants[i],
                         a,
@@ -201,7 +201,7 @@ impl EncodeIDSet {
                         &mut need_insert,
                     );
                 }
-                (BitVecRelation::Descendant, BitVecRelation::Descendant) => {
+                (BitVecRelation::Ancestor, BitVecRelation::Ancestor) => {
                     self.split_self(&mut collect_divison_ranges, main_descendants[i], &main_dim);
                 }
                 _ => {}
