@@ -64,8 +64,8 @@ pub struct MapDimsMutRefs<'a, T> {
 
 impl EncodeIDSet {
     // BTreeMap参照
-    pub fn dims_btree(&self, main_dim_select: &DimensionSelect) -> DimensionBTreeRefs<'_> {
-        match main_dim_select {
+    pub fn dims_btree(&self, main_dim: &DimensionSelect) -> DimensionBTreeRefs<'_> {
+        match main_dim {
             DimensionSelect::F => DimensionBTreeRefs {
                 main: &self.f,
                 a: &self.x,
@@ -85,11 +85,8 @@ impl EncodeIDSet {
     }
 
     // BTreeMap可変参照
-    pub fn dims_btree_mut(
-        &mut self,
-        main_dim_select: &DimensionSelect,
-    ) -> DimensionBTreeMutRefs<'_> {
-        match main_dim_select {
+    pub fn dims_btree_mut(&mut self, main_dim: &DimensionSelect) -> DimensionBTreeMutRefs<'_> {
+        match main_dim {
             DimensionSelect::F => DimensionBTreeMutRefs {
                 main: &mut self.f,
                 a: &mut self.x,
@@ -113,9 +110,9 @@ impl EncodeIDSet {
         main: &'a T,
         a: &'a T,
         b: &'a T,
-        main_dim_select: &DimensionSelect,
+        main_dim: &DimensionSelect,
     ) -> MapDimsRefs<'a, T> {
-        match main_dim_select {
+        match main_dim {
             DimensionSelect::F => MapDimsRefs {
                 f: main,
                 x: a,
@@ -138,9 +135,9 @@ impl EncodeIDSet {
         main: &'a mut T,
         a: &'a mut T,
         b: &'a mut T,
-        main_dim_select: &DimensionSelect,
+        main_dim: &DimensionSelect,
     ) -> MapDimsMutRefs<'a, T> {
-        match main_dim_select {
+        match main_dim {
             DimensionSelect::F => MapDimsMutRefs {
                 f: main,
                 x: a,

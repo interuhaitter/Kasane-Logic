@@ -21,23 +21,23 @@ fn main() {
         set.insert(encode_id.clone());
     });
 
-    println!("-------------");
-
     id2.to_encode().iter().for_each(|encode_id| {
         set.insert(encode_id.clone());
     });
-    println!("-------------");
 
     id3.to_encode().iter().for_each(|encode_id| {
         set.insert(encode_id.clone());
     });
-    println!("-------------");
 
     for ele in set.iter() {
         writeln!(file1, "{},", ele).expect("cannot write to file");
     }
 
-    writeln!(file2, "{:?},", set).expect("cannot write to file");
+    let get_id = SpaceTimeID::new(2, [1, 1], [1, 1], [1, 1], 0, [0, u64::MAX]).unwrap();
 
-    println!("output.txt に書き出しました");
+    let fetched = set.get(get_id.to_encode().first().unwrap());
+
+    for ele in fetched.iter() {
+        writeln!(file2, "{},", ele.decode()).expect("cannot write to file");
+    }
 }

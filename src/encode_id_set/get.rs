@@ -7,7 +7,7 @@ use crate::{
 };
 
 impl EncodeIDSet {
-    pub fn get(&self, encode_id: EncodeID) -> Vec<EncodeID> {
+    pub fn get(&self, encode_id: &EncodeID) -> Vec<EncodeID> {
         let mut result = vec![];
 
         //下位IDの個数が最小の次元を選択する
@@ -62,7 +62,7 @@ impl EncodeIDSet {
         //Main次元の祖先を探索する
         let main_ancestors: Vec<Index> = Self::collect_ancestors(&self, main, &main_dim);
 
-        //Main次元において、祖先にも子孫にも重なる範囲が存在しなければ空の要素を返す
+        //Main次元において、祖先にも子孫にも重なる範囲が存在しなければ挿入
         if main_ancestors.is_empty() && min_count == 0 {
             return result;
         }
@@ -116,6 +116,87 @@ impl EncodeIDSet {
             }
         };
 
-        todo!()
+        //Main次元における祖先の範囲を調べる
+        for (i, (a_rel, b_rel)) in a_relation.0.iter().zip(b_relation.0.iter()).enumerate() {
+            match (a_rel, b_rel) {
+                (
+                    BitVecRelation::Descendant | BitVecRelation::Equal,
+                    BitVecRelation::Descendant | BitVecRelation::Equal,
+                ) => {
+                    let map_dims = EncodeIDSet::map_dims(main, a, b, &main_dim);
+                    result.push(EncodeID {
+                        f: map_dims.f.clone(),
+                        x: main_ancestors_reverse[i].x.clone(),
+                        y: main_ancestors_reverse[i].y.clone(),
+                    });
+                }
+                (BitVecRelation::Descendant | BitVecRelation::Equal, BitVecRelation::Ancestor) => {
+                    let map_dims = EncodeIDSet::map_dims(main, a, b, &main_dim);
+                    result.push(EncodeID {
+                        f: map_dims.f.clone(),
+                        x: main_ancestors_reverse[i].x.clone(),
+                        y: map_dims.y.clone(),
+                    });
+                }
+                (BitVecRelation::Ancestor, BitVecRelation::Descendant | BitVecRelation::Equal) => {
+                    let map_dims = EncodeIDSet::map_dims(main, a, b, &main_dim);
+                    result.push(EncodeID {
+                        f: map_dims.f.clone(),
+                        x: map_dims.x.clone(),
+                        y: main_ancestors_reverse[i].y.clone(),
+                    });
+                }
+                (BitVecRelation::Ancestor, BitVecRelation::Ancestor) => {
+                    //全ての次元において祖先のIDが存在するため、入力IDそのものを返す
+                    return vec![encode_id.clone()];
+                }
+                _ => {}
+            }
+        }
+
+        //Main次元における子孫の範囲について調べる
+        for (i, (a_rel, b_rel)) in a_relation.1.iter().zip(b_relation.1.iter()).enumerate() {
+            match (a_rel, b_rel) {
+                (
+                    BitVecRelation::Descendant | BitVecRelation::Equal,
+                    BitVecRelation::Descendant | BitVecRelation::Equal,
+                ) => {
+                    //全ての次元において子孫のIDが存在するため、結果に追加する
+                    result.push(
+                        self.reverse
+                            .get(&main_descendants[i])
+                            .expect("Internal error: reverse index not found for under")
+                            .clone(),
+                    );
+                }
+                (BitVecRelation::Descendant | BitVecRelation::Equal, BitVecRelation::Ancestor) => {
+                    let map_dims = EncodeIDSet::map_dims(main, a, b, &main_dim);
+                    result.push(EncodeID {
+                        f: map_dims.f.clone(),
+                        x: main_descendants_reverse[i].x.clone(),
+                        y: map_dims.y.clone(),
+                    });
+                }
+                (BitVecRelation::Ancestor, BitVecRelation::Descendant | BitVecRelation::Equal) => {
+                    let map_dims = EncodeIDSet::map_dims(main, a, b, &main_dim);
+                    result.push(EncodeID {
+                        f: map_dims.f.clone(),
+                        x: map_dims.x.clone(),
+                        y: main_descendants_reverse[i].y.clone(),
+                    });
+                }
+                (BitVecRelation::Ancestor, BitVecRelation::Ancestor) => {
+                    let map_dims = EncodeIDSet::map_dims(main, a, b, &main_dim);
+                    result.push(EncodeID {
+                        f: main_ancestors_reverse[i].f.clone(),
+                        x: map_dims.x.clone(),
+                        y: map_dims.y.clone(),
+                    });
+                }
+                _ => {}
+            }
+        }
+
+        result
     }
 }

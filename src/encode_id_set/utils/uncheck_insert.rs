@@ -7,7 +7,7 @@ use crate::{
 };
 
 impl EncodeIDSet {
-    pub(crate) fn uncheck_insert(&mut self, encode_id: EncodeID) {
+    pub fn uncheck_insert(&mut self, encode_id: EncodeID) {
         let index = self.generate_index();
 
         Self::update_layer(&mut self.f, &encode_id.f, index);
