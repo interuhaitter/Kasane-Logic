@@ -1,11 +1,11 @@
 use std::{collections::HashSet, f64::consts::PI};
 
 use crate::{
-    point::{ECEF, Point},
+    point::{Point, ECEF},
     space_time_id::SpaceTimeID,
 };
 
-pub fn line(z: u8, a: Point, b: Point) -> HashSet<SpaceTimeID> {
+pub fn line<P: Point>(z: u8, a: P, b: P) -> HashSet<SpaceTimeID> {
     let ecef_a = a.to_ecef();
     let ecef_b = b.to_ecef();
 
