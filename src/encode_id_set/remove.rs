@@ -6,8 +6,7 @@ use crate::{
     bit_vec::relation::BitVecRelation,
     encode_id::EncodeID,
     encode_id_set::{
-        EncodeIDSet, Index,
-        insert::split_self::RangesCollect,
+        EncodeIDSet, Index, insert::split_self::RangesCollect,
         utils::select_dimensions::DimensionSelect,
     },
 };

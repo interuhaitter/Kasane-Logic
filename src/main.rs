@@ -7,7 +7,7 @@ fn main() {
     let mut set2 = EncodeIDSet::new();
 
     let id1 = id! {
-        z: 5,
+        z: 6,
         f: [-1, 10],
         x: [2, 10],
         y: [5, 10],
@@ -46,15 +46,11 @@ fn main() {
     }
     .unwrap();
 
-    let mut file1 = File::create("output.txt").expect("cannot create file");
+    let mut file1 = File::create("output1.txt").expect("cannot create file");
 
-    let mut file2 = File::create("output_debug.txt").expect("cannot create file");
+    let mut file2 = File::create("output2.txt").expect("cannot create file");
 
-    println!("{},", id1);
-    println!("{},", id2);
-    println!("{},", id3);
-    println!("{},", id4);
-    println!("{},", id5);
+    let mut file3 = File::create("output3.txt").expect("cannot create file");
 
     id1.to_encode().iter().for_each(|encode_id| {
         set1.insert(encode_id.clone());
@@ -80,9 +76,13 @@ fn main() {
         writeln!(file1, "{},", ele.decode()).expect("cannot write to file");
     }
 
-    let set3 = set1.intersection(&set2);
+    for ele in set2.iter() {
+        writeln!(file2, "{},", ele.decode()).expect("cannot write to file");
+    }
+
+    let set3 = set1.difference(&set2);
 
     for ele in set3.iter() {
-        writeln!(file2, "{},", ele.decode()).expect("cannot write to file");
+        writeln!(file3, "{},", ele.decode()).expect("cannot write to file");
     }
 }
