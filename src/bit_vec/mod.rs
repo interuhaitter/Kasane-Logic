@@ -5,11 +5,15 @@ pub mod relation;
 pub mod remove_lowest_layer;
 pub mod subtract;
 pub mod upper_bound;
+use bincode::{Decode, Encode};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 /// ビット列を用いて時空間IDの各次元の階層構造を管理する
 ///
 /// 内部的にはバイト配列として保持し、階層ごとのビット操作を効率的に行う
-#[derive(Debug, Clone, Eq, Hash, PartialEq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Eq, Hash, PartialEq, PartialOrd, Ord, Encode, Decode)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct BitVec(pub Vec<u8>);
 
 impl BitVec {
