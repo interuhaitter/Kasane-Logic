@@ -6,4 +6,5 @@
 
 pub mod line;
 pub mod point;
+pub mod route;
 pub mod triangle;

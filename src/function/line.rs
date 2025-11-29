@@ -126,6 +126,9 @@ fn get_line_voxels_dda(vf1: VoxelFloat, vf2: VoxelFloat) -> Vec<Voxel> {
     let mut t_max_x = t_max_x;
     let mut t_max_y = t_max_y;
 
+    let max_i = adf + adx + ady + 3.0;
+    let mut i = 0;
+
     while !(cur_x == x2 && cur_y == y2 && cur_f == f2) {
         // 最も近い境界を持つ軸を進める（これにより順序が保証される）
         if t_max_x < t_max_y {
@@ -150,13 +153,24 @@ fn get_line_voxels_dda(vf1: VoxelFloat, vf2: VoxelFloat) -> Vec<Voxel> {
             x: cur_x as u64,
             y: cur_y as u64,
         });
+
+        if i as f64 > max_i {
+            break;
+        }
+
+        i = i + 1;
     }
 
     voxels
 }
 
 /// 分割法でECEF空間を補間し、DDAアルゴリズムで線分上のボクセルを取得
-fn get_voxels_along_line_divided<P: Point>(z: u8, point1: P, point2: P, divide_num: usize) -> Vec<Voxel> {
+fn get_voxels_along_line_divided<P: Point>(
+    z: u8,
+    point1: P,
+    point2: P,
+    divide_num: usize,
+) -> Vec<Voxel> {
     let ecef1 = point1.to_ecef();
     let ecef2 = point2.to_ecef();
 
@@ -212,11 +226,11 @@ pub fn line<P: Point>(z: u8, a: P, b: P) -> EncodeIDSet {
         .abs()
         .min(coordinate_b.latitude.abs())
         .to_radians();
-    let r = 6_378_137.0_f64; // 地球半径（WGS84）
+    let r = 6_378_137.0_f64;
     let d = PI * r * min_lat_rad.cos() * 2f64.powi(-3 - z as i32);
 
     let divide_num = (distance / d).ceil() as usize;
-    let divide_num = divide_num.max(1); // 最低1分割
+    let divide_num = divide_num.max(1);
 
     let voxels = get_voxels_along_line_divided(z, a, b, divide_num);
 
