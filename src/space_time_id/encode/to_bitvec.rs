@@ -1,6 +1,6 @@
 use crate::bit_vec::BitVec;
 
-pub(crate) fn to_bitvec_xy(z: u8, xy: u64) -> BitVec {
+pub fn to_bitvec_xy(z: u8, xy: u64) -> BitVec {
     let length = ((z * 2 / 8) + 1).max(1) as usize;
     let mut result = vec![0u8; length];
 
