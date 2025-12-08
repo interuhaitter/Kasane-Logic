@@ -1,11 +1,13 @@
 use std::{collections::btree_map::Range, fmt, i64};
 
 use crate::{
+    bit_vec::BitVec,
     encode_id::EncodeID,
     error::Error,
     space_id::{
         SpaceID,
         constants::{F_MAX, F_MIN, XY_MAX},
+        segment::Segment,
     },
 };
 
@@ -222,6 +224,18 @@ impl SpaceID for RangeID {
     }
 
     fn into_encode(self) -> EncodeID {
-        todo!()
+        let f_segment = Segment::<i64>::new(self.z, self.f);
+        let x_segment = Segment::<u64>::new(self.z, self.x);
+        let y_segment = Segment::<u64>::new(self.z, self.y);
+
+        let f_bitvec: Vec<BitVec> = f_segment.iter().map(|f| f.to_bitvec()).collect();
+        let x_bitvec: Vec<BitVec> = x_segment.iter().map(|x| x.to_bitvec()).collect();
+        let y_bitvec: Vec<BitVec> = y_segment.iter().map(|y| y.to_bitvec()).collect();
+
+        EncodeID {
+            f: f_bitvec,
+            x: x_bitvec,
+            y: y_bitvec,
+        }
     }
 }

@@ -1,10 +1,12 @@
-use kasane_logic::space_id::{range::RangeID, single::SingleID};
+use kasane_logic::space_id::{SpaceID, range::RangeID, single::SingleID};
 
 fn main() {
-    let id = RangeID::new(4, [-5, 3], [3, 6], [1, 2]).unwrap();
+    let mut id = RangeID::new(4, [-5, 3], [3, 6], [1, 2]).unwrap();
 
     println!("{},", id);
 
-    println!("{},", id.parent(1).unwrap());
-    println!("{},", id.parent(2).unwrap());
+    id.move_up(3).unwrap();
+    id.move_east(3);
+
+    println!("{},", id);
 }
