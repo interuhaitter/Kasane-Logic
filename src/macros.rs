@@ -1,27 +1,8 @@
 #[macro_export]
 macro_rules! range_opt {
-    // [-] → [None, None]
-    ([-]) => {
-        [None, None]
-    };
-
-    ([-,-]) => {
-        [None, None]
-    };
-
     // [x] → [Some(x), Some(x)]
     ([$x:expr]) => {
         [Some($x), Some($x)]
-    };
-
-    // [-, b] → [None, Some(b)]
-    ([-, $b:expr]) => {
-        [None, Some($b)]
-    };
-
-    // [a, -] → [Some(a), None]
-    ([$a:expr, -]) => {
-        [Some($a), None]
     };
 
     // [a, b] → [Some(a), Some(b)] (a ≤ b)

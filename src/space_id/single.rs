@@ -214,36 +214,20 @@ impl SpaceID for SingleID {
     fn move_west(&mut self, by: u64) {
         self.x = (self.x.wrapping_add(by)) % self.max_xy();
     }
+}
 
-    fn into_encode(self) -> EncodeID {
-        let f_bitvec = Segment {
-            z: self.z,
-            dim: self.f,
-        }
-        .to_bitvec();
+impl From<SingleID> for EncodeID {
+    fn from(id: SingleID) -> Self {
+        let f_bitvec = Segment { z: id.z, dim: id.f }.to_bitvec();
 
-        let x_bitvec = Segment {
-            z: self.z,
-            dim: self.x,
-        }
-        .to_bitvec();
+        let x_bitvec = Segment { z: id.z, dim: id.x }.to_bitvec();
 
-        let y_bitvec = Segment {
-            z: self.z,
-            dim: self.y,
-        }
-        .to_bitvec();
+        let y_bitvec = Segment { z: id.z, dim: id.y }.to_bitvec();
 
         EncodeID {
             f: vec![f_bitvec],
             x: vec![x_bitvec],
             y: vec![y_bitvec],
         }
-    }
-}
-
-impl From<SingleID> for EncodeID {
-    fn from(id: SingleID) -> Self {
-        id.into_encode()
     }
 }

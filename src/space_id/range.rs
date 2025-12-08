@@ -233,11 +233,13 @@ impl SpaceID for RangeID {
         self.x[0] = (self.x[0].wrapping_sub(by)) % self.max_xy();
         self.x[1] = (self.x[1].wrapping_sub(by)) % self.max_xy();
     }
+}
 
-    fn into_encode(self) -> EncodeID {
-        let f_segment = Segment::<i64>::new(self.z, self.f);
-        let x_segment = Segment::<u64>::new(self.z, self.x);
-        let y_segment = Segment::<u64>::new(self.z, self.y);
+impl From<RangeID> for EncodeID {
+    fn from(id: RangeID) -> Self {
+        let f_segment = Segment::<i64>::new(id.z, id.f);
+        let x_segment = Segment::<u64>::new(id.z, id.x);
+        let y_segment = Segment::<u64>::new(id.z, id.y);
 
         let f_bitvec: Vec<BitVec> = f_segment.iter().map(|f| f.to_bitvec()).collect();
         let x_bitvec: Vec<BitVec> = x_segment.iter().map(|x| x.to_bitvec()).collect();
@@ -248,11 +250,5 @@ impl SpaceID for RangeID {
             x: x_bitvec,
             y: y_bitvec,
         }
-    }
-}
-
-impl From<RangeID> for EncodeID {
-    fn from(id: RangeID) -> Self {
-        id.into_encode()
     }
 }
