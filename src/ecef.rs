@@ -1,8 +1,4 @@
-use super::{
-    Point,
-    constants::{WGS84_A, WGS84_INV_F},
-    coordinate::Coordinate,
-};
+use crate::coordinate::{Coordinate, WGS84_A, WGS84_INV_F};
 
 #[derive(Debug, Clone, Copy)]
 pub struct ECEF {
@@ -12,13 +8,10 @@ pub struct ECEF {
 }
 
 impl ECEF {
-    /// 新しいECEF座標を作成
     pub fn new(x: f64, y: f64, z: f64) -> ECEF {
         ECEF { x, y, z }
     }
-}
 
-impl Point for ECEF {
     fn to_coordinate(&self) -> Coordinate {
         let f = 1.0 / WGS84_INV_F;
         let b = WGS84_A * (1.0 - f);
@@ -55,9 +48,5 @@ impl Point for ECEF {
             longitude: lon.to_degrees(),
             altitude: h,
         }
-    }
-
-    fn to_ecef(&self) -> ECEF {
-        *self
     }
 }
