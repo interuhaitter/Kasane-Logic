@@ -1,10 +1,11 @@
-use crate::{error::Error, geometry::ecef::Ecef as ECEF, id::space_id::single::SingleID};
-
-/// WGS-84楕円体の長半径（赤道半径）[m]
-pub const WGS84_A: f64 = 6_378_137.0;
-
-/// WGS-84楕円体の逆扁平率
-pub const WGS84_INV_F: f64 = 298.257_223_563;
+use crate::{
+    error::Error,
+    geometry::{
+        constants::{WGS84_A, WGS84_INV_F},
+        point::{Point, ecef::Ecef},
+    },
+    id::space_id::single::SingleID,
+};
 
 pub struct Coordinate {
     pub latitude: f64,
@@ -33,34 +34,7 @@ impl Coordinate {
         })
     }
 
-    fn to_ecef(&self) -> ECEF {
-        let f = 1.0 / WGS84_INV_F;
-        let b = WGS84_A * (1.0 - f);
-        let e2 = 1.0 - (b * b) / (WGS84_A * WGS84_A);
-
-        let lat = self.latitude.to_radians();
-        let lon = self.longitude.to_radians();
-        let h = self.altitude;
-
-        let sin_lat = lat.sin();
-        let cos_lat = lat.cos();
-        let cos_lon = lon.cos();
-        let sin_lon = lon.sin();
-
-        let n = WGS84_A / (1.0 - e2 * sin_lat * sin_lat).sqrt();
-
-        let x_f64 = (n + h) * cos_lat * cos_lon;
-        let y_f64 = (n + h) * cos_lat * sin_lon;
-        let z_f64 = (n * (1.0 - e2) + h) * sin_lat;
-
-        ECEF {
-            x: x_f64,
-            y: y_f64,
-            z: z_f64,
-        }
-    }
-
-    fn to_id(&self, z: u8) -> SingleID {
+    pub fn to_id(&self, z: u8) -> SingleID {
         let lat = self.latitude;
         let lon = self.longitude;
         let alt = self.altitude;
@@ -80,5 +54,36 @@ impl Coordinate {
             .floor() as u64;
 
         SingleID { z, f, x, y }
+    }
+}
+
+impl Point for Coordinate {}
+
+impl From<Coordinate> for Ecef {
+    fn from(value: Coordinate) -> Self {
+        let f = 1.0 / WGS84_INV_F;
+        let b = WGS84_A * (1.0 - f);
+        let e2 = 1.0 - (b * b) / (WGS84_A * WGS84_A);
+
+        let lat = value.latitude.to_radians();
+        let lon = value.longitude.to_radians();
+        let h = value.altitude;
+
+        let sin_lat = lat.sin();
+        let cos_lat = lat.cos();
+        let cos_lon = lon.cos();
+        let sin_lon = lon.sin();
+
+        let n = WGS84_A / (1.0 - e2 * sin_lat * sin_lat).sqrt();
+
+        let x_f64 = (n + h) * cos_lat * cos_lon;
+        let y_f64 = (n + h) * cos_lat * sin_lon;
+        let z_f64 = (n * (1.0 - e2) + h) * sin_lat;
+
+        Ecef {
+            x: x_f64,
+            y: y_f64,
+            z: z_f64,
+        }
     }
 }
