@@ -37,6 +37,18 @@ pub struct SingleID {
 }
 
 impl fmt::Display for SingleID {
+    /// `SingleID` を文字列形式で表示します。
+    ///
+    /// 形式は `"{z}/{f}/{x}/{y}"` です。
+    ///
+    /// # 例
+    /// ```
+    /// # use kasane_logic::id::space_id::single::SingleID;
+    /// # use std::fmt::Write;
+    /// let id = SingleID { z: 4, f: 6, x: 9, y: 10 };
+    /// let s = format!("{}", id);
+    /// assert_eq!(s, "4/6/9/10");
+    /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}/{}/{}/{}", self.z, self.f, self.x, self.y)
     }
@@ -1147,6 +1159,7 @@ impl crate::id::space_id::SpaceID for SingleID {
 }
 
 impl From<SingleID> for EncodeID {
+    ///`SingleID`を[`EncodeID`]に変換します。表す物理的な範囲に変化はありません。
     fn from(id: SingleID) -> Self {
         let f_bitvec = Segment { z: id.z, dim: id.f }.into();
         let x_bitvec = Segment { z: id.z, dim: id.x }.into();
@@ -1161,6 +1174,7 @@ impl From<SingleID> for EncodeID {
 }
 
 impl From<SingleID> for RangeID {
+    ///`SingleID`を[`RangeID`]に変換します。表す物理的な範囲に変化はありません。
     fn from(id: SingleID) -> Self {
         RangeID {
             z: id.z,
