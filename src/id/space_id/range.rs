@@ -5,6 +5,7 @@ use std::fmt;
 use crate::{
     bit_vec::BitVec,
     error::Error,
+    geometry::point::coordinate::Coordinate,
     id::space_id::{
         SpaceID,
         constants::{F_MAX, F_MIN, XY_MAX},
@@ -52,14 +53,6 @@ impl RangeID {
         let f_min = F_MIN[z as usize];
         let f_max = F_MAX[z as usize];
         let xy_max = XY_MAX[z as usize];
-
-        if f[0] > f[1] {
-            return Err(Error::FRangeReversed {
-                z,
-                start: f[0],
-                end: f[1],
-            });
-        }
 
         if f[0] < f_min || f[0] > f_max {
             return Err(Error::FOutOfRange { f: f[0], z });
@@ -299,9 +292,124 @@ impl SpaceID for RangeID {
         Ok(())
     }
 
-    /* -----------------------------
-     *     wrap_*   (循環、エラーなし)
-     * ----------------------------- */
+    fn bound_f(&mut self, by: i64) -> Result<(), Error> {
+        let min = self.min_f();
+        let max = self.max_f();
+        let z = self.z;
+
+        let ns = self.f[0]
+            .checked_add(by)
+            .ok_or(Error::FOutOfRange { f: i64::MAX, z })?;
+        let ne = self.f[1]
+            .checked_add(by)
+            .ok_or(Error::FOutOfRange { f: i64::MAX, z })?;
+
+        if ns < min || ns > max {
+            return Err(Error::FOutOfRange { f: ns, z });
+        }
+        if ne < min || ne > max {
+            return Err(Error::FOutOfRange { f: ne, z });
+        }
+
+        self.f = [ns, ne];
+        Ok(())
+    }
+
+    fn bound_x(&mut self, by: i64) -> Result<(), Error> {
+        if by >= 0 {
+            // east
+            let byu = by as u64;
+            let max = self.max_xy();
+            let z = self.z;
+
+            let ns = self.x[0]
+                .checked_add(byu)
+                .ok_or(Error::XOutOfRange { x: u64::MAX, z })?;
+            let ne = self.x[1]
+                .checked_add(byu)
+                .ok_or(Error::XOutOfRange { x: u64::MAX, z })?;
+
+            if ns > max {
+                return Err(Error::XOutOfRange { x: ns, z });
+            }
+            if ne > max {
+                return Err(Error::XOutOfRange { x: ne, z });
+            }
+
+            self.x = [ns, ne];
+            Ok(())
+        } else {
+            // west
+            let byu = (-by) as u64;
+            let max = self.max_xy();
+            let z = self.z;
+
+            let ns = self.x[0]
+                .checked_sub(byu)
+                .ok_or(Error::XOutOfRange { x: 0, z })?;
+            let ne = self.x[1]
+                .checked_sub(byu)
+                .ok_or(Error::XOutOfRange { x: 0, z })?;
+
+            if ns > max {
+                return Err(Error::XOutOfRange { x: ns, z });
+            }
+            if ne > max {
+                return Err(Error::XOutOfRange { x: ne, z });
+            }
+
+            self.x = [ns, ne];
+            Ok(())
+        }
+    }
+
+    fn bound_y(&mut self, by: i64) -> Result<(), Error> {
+        if by >= 0 {
+            // north
+            let byu = by as u64;
+            let max = self.max_xy();
+            let z = self.z;
+
+            let ns = self.y[0]
+                .checked_add(byu)
+                .ok_or(Error::YOutOfRange { y: u64::MAX, z })?;
+            let ne = self.y[1]
+                .checked_add(byu)
+                .ok_or(Error::YOutOfRange { y: u64::MAX, z })?;
+
+            if ns > max {
+                return Err(Error::YOutOfRange { y: ns, z });
+            }
+            if ne > max {
+                return Err(Error::YOutOfRange { y: ne, z });
+            }
+
+            self.y = [ns, ne];
+            Ok(())
+        } else {
+            // south
+            let byu = (-by) as u64;
+            let max = self.max_xy();
+            let z = self.z;
+
+            let ns = self.y[0]
+                .checked_sub(byu)
+                .ok_or(Error::YOutOfRange { y: 0, z })?;
+            let ne = self.y[1]
+                .checked_sub(byu)
+                .ok_or(Error::YOutOfRange { y: 0, z })?;
+
+            if ns > max {
+                return Err(Error::YOutOfRange { y: ns, z });
+            }
+            if ne > max {
+                return Err(Error::YOutOfRange { y: ne, z });
+            }
+
+            self.y = [ns, ne];
+            Ok(())
+        }
+    }
 
     fn wrap_up(&mut self, by: i64) {
         let min = self.min_f();
@@ -353,6 +461,94 @@ impl SpaceID for RangeID {
         for v in &mut self.x {
             *v = ((*v + ring - (by % ring)) % ring);
         }
+    }
+
+    fn wrap_f(&mut self, by: i64) {
+        let min = self.min_f();
+        let max = self.max_f();
+        let width = (max - min + 1) as i128;
+
+        for v in &mut self.f {
+            let offset = (*v - min) as i128;
+            let new = ((offset + (by as i128)) % width + width) % width;
+            *v = (min as i128 + new) as i64;
+        }
+    }
+
+    fn wrap_x(&mut self, by: i64) {
+        let max = self.max_xy();
+        let ring = max + 1;
+
+        let shift = if by >= 0 {
+            (by as u64) % ring
+        } else {
+            (ring - ((-by as u64) % ring)) % ring
+        };
+
+        for v in &mut self.x {
+            *v = (*v + shift) % ring;
+        }
+    }
+
+    fn wrap_y(&mut self, by: i64) {
+        let max = self.max_xy();
+        let ring = max + 1;
+
+        let shift = if by >= 0 {
+            (by as u64) % ring
+        } else {
+            (ring - ((-by as u64) % ring)) % ring
+        };
+
+        for v in &mut self.y {
+            *v = (*v + shift) % ring;
+        }
+    }
+
+    fn center(&self) -> Coordinate {
+        let z = self.z;
+
+        let xf = (self.x[0] + self.x[1]) as f64 / 2.0 + 0.5;
+        let yf = (self.y[0] + self.y[1]) as f64 / 2.0 + 0.5;
+        let ff = (self.f[0] + self.f[1]) as f64 / 2.0 + 0.5;
+
+        Coordinate {
+            longitude: helpers::longitude(xf, z),
+            latitude: helpers::latitude(yf, z),
+            altitude: helpers::altitude(ff, z),
+        }
+    }
+
+    fn vertices(&self) -> [Coordinate; 8] {
+        let z = self.z;
+
+        // 2 点ずつの端点
+        let xs = [self.x[0] as f64, (self.x[1] + 1) as f64];
+        let ys = [self.y[0] as f64, (self.y[1] + 1) as f64];
+        let fs = [self.f[0] as f64, (self.f[1] + 1) as f64];
+
+        // 各軸方向の計算は 2 回だけにする
+        let longitudes: [f64; 2] = [helpers::longitude(xs[0], z), helpers::longitude(xs[1], z)];
+
+        let latitudes: [f64; 2] = [helpers::latitude(ys[0], z), helpers::latitude(ys[1], z)];
+
+        let altitudes: [f64; 2] = [helpers::altitude(fs[0], z), helpers::altitude(fs[1], z)];
+
+        let mut out = [Coordinate {
+            longitude: 0.0,
+            latitude: 0.0,
+            altitude: 0.0,
+        }; 8];
+
+        for (i, (fi, yi, xi)) in iproduct!(0..2, 0..2, 0..2).enumerate() {
+            out[i] = Coordinate {
+                longitude: longitudes[xi],
+                latitude: latitudes[yi],
+                altitude: altitudes[fi],
+            };
+        }
+
+        out
     }
 }
 

@@ -23,13 +23,4 @@ pub enum Error {
 
     #[error("Altitude '{altitude}' is out of range (valid: -33,554,432.0..=33,554,432.0)")]
     AltitudeOutOfRange { altitude: f64 },
-
-    #[error("Invalid F range: start '{start}' must be less than end '{end}' for ZoomLevel '{z}'")]
-    FRangeReversed { z: u8, start: i64, end: i64 },
-
-    #[error("Invalid F range: start '{start}' must be less than end '{end}' for ZoomLevel '{z}'")]
-    XRangeReversed { z: u8, start: i64, end: i64 },
-
-    #[error("Invalid F range: start '{start}' must be less than end '{end}' for ZoomLevel '{z}'")]
-    YRangeReversed { z: u8, start: i64, end: i64 },
 }

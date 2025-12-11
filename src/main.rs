@@ -1,13 +1,20 @@
 use std::collections::HashMap;
 
-use kasane_logic::id::space_id::{SpaceID, range::RangeID, single::SingleID};
+use kasane_logic::id::space_id::{
+    SpaceID,
+    constants::{F_MAX, F_MIN, XY_MAX},
+    range::RangeID,
+    single::SingleID,
+};
 
 fn main() {
-    let mut id = RangeID::new(4, [-5, 3], [3, 6], [1, 2]).unwrap();
+    let mut id = SingleID::new(4, 6, 9, 14).unwrap();
 
-    println!("{},", id);
+    println!("{}", id);
+    println!("FMAX{}", id.max_f());
+    println!("FMIN{}", id.min_f());
 
-    id.wrap_up(3);
+    let _ = id.bound_down(50).unwrap();
 
-    println!("{},", id);
+    println!("{}", id);
 }

@@ -7,6 +7,7 @@ use crate::{
     id::space_id::single::SingleID,
 };
 
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Coordinate {
     pub latitude: f64,
     pub longitude: f64,
