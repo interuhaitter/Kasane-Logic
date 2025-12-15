@@ -534,7 +534,7 @@ impl crate::id::space_id::SpaceID for SingleID {
     /// assert_eq!(id.as_y(), 10);
     ///
     /// let _ = id.move_north(4).unwrap();
-    /// assert_eq!(id.as_y(), 14);
+    /// assert_eq!(id.as_y(), 6);
     /// ```
     ///
     /// 範囲外の検知によるエラー
@@ -544,10 +544,10 @@ impl crate::id::space_id::SpaceID for SingleID {
     /// # use kasane_logic::error::Error;
     /// let mut id = SingleID::new(4, 6, 9, 10).unwrap();
     /// assert_eq!(id.as_f(), 6);
-    /// assert_eq!(id.move_north(50), Err(Error::YOutOfRange { z: 4, y: 60 }));
+    /// assert_eq!(id.move_north(50), Err(Error::YOutOfRange { z: 4, y: 0 }));
     /// ```
     fn move_north(&mut self, by: u64) -> Result<(), Error> {
-        self.move_y(by as i64)
+        self.move_y(-(by as i64))
     }
 
     /// 指定したインデックス差 `by` に基づき、この `SingleID` を南方向に動かします。
@@ -566,7 +566,7 @@ impl crate::id::space_id::SpaceID for SingleID {
     /// assert_eq!(id.as_y(), 10);
     ///
     /// let _ = id.move_south(4).unwrap();
-    /// assert_eq!(id.as_y(), 6);
+    /// assert_eq!(id.as_y(), 14);
     /// ```
     ///
     /// 範囲外の検知によるエラー
@@ -576,10 +576,10 @@ impl crate::id::space_id::SpaceID for SingleID {
     /// # use kasane_logic::error::Error;
     /// let mut id = SingleID::new(4, 6, 9, 10).unwrap();
     /// assert_eq!(id.as_f(), 6);
-    /// assert_eq!(id.move_south(50), Err(Error::YOutOfRange { z: 4, y: 0 }));
+    /// assert_eq!(id.move_south(50), Err(Error::YOutOfRange { z: 4, y: 60 }));
     /// ```
     fn move_south(&mut self, by: u64) -> Result<(), Error> {
-        self.move_y(-(by as i64))
+        self.move_y(by as i64)
     }
 
     /// 指定したインデックス差 `by` に基づき、この `SingleID` を東方向に動かします。
@@ -863,7 +863,7 @@ impl crate::id::space_id::SpaceID for SingleID {
 }
 
 impl From<SingleID> for EncodeID {
-    ///`SingleID`を[`EncodeID`]に変換します。kaga物理的な範囲に変化はありません。
+    ///`SingleID`を[`EncodeID`]に変換します。物理的な範囲に変化はありません。
     fn from(id: SingleID) -> Self {
         let f_bitvec = Segment { z: id.z, dim: id.f }.into();
         let x_bitvec = Segment { z: id.z, dim: id.x }.into();

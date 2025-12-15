@@ -336,7 +336,7 @@ impl RangeID {
         Some(RangeID { z, f, x, y })
     }
 
-    ///
+    /// [`RangeID`]を[`SingleID`]に分解し、イテレータとして提供します。
     pub fn to_single(&self) -> impl Iterator<Item = SingleID> + '_ {
         let f_range = self.f[0]..=self.f[1];
         let x_range = self.x[0]..=self.x[1];
@@ -347,7 +347,7 @@ impl RangeID {
 
     /// 検証を行わずに [`RangeID`] を構築します。
     ///
-    /// この関数は [`RangeID::new`] と異なり、与えられた `z`, `f1`, `f2`, `x1`,`x2`, `y1, `y2`` に対して
+    /// この関数は [`RangeID::new`] と異なり、与えられた `z`, `f1`, `f2`, `x1`,`x2`, `y1, `y2` に対して
     /// 一切の範囲チェックや整合性チェックを行いません。
     /// そのため、高速に ID を生成できますが、**不正なパラメータを与えた場合の動作は未定義です**。
     ///
@@ -375,41 +375,191 @@ impl RangeID {
         RangeID { z, f, x, y }
     }
 }
+
 impl SpaceID for RangeID {
+    /// このIDのズームレベルにおける最小の F インデックスを返す
+    /// ```
+    /// # use kasane_logic::id::space_id::range::RangeID;
+    /// # use kasane_logic::error::Error;
+    /// # use crate::kasane_logic::id::space_id::SpaceID;
+    /// let id = RangeID::new(5, [-10,-5], [8,9], [5,10]).unwrap();
+    /// assert_eq!(id.as_z(), 5u8);
+    /// assert_eq!(id.min_f(), -32i64);
+    /// ```
     fn min_f(&self) -> i64 {
         F_MIN[self.z as usize]
     }
 
+    /// このIDのズームレベルにおける最小の F インデックスを返す
+    /// ```
+    /// # use kasane_logic::id::space_id::range::RangeID;
+    /// # use kasane_logic::error::Error;
+    /// # use crate::kasane_logic::id::space_id::SpaceID;
+    /// let id = RangeID::new(5, [-10,-5], [8,9], [5,10]).unwrap();
+    /// assert_eq!(id.as_z(), 5u8);
+    /// assert_eq!(id.max_f(), 31i64);
+    /// ```
     fn max_f(&self) -> i64 {
         F_MAX[self.z as usize]
     }
 
+    /// このIDのズームレベルにおける最小の F インデックスを返す
+    /// ```
+    /// # use kasane_logic::id::space_id::range::RangeID;
+    /// # use kasane_logic::error::Error;
+    /// # use crate::kasane_logic::id::space_id::SpaceID;
+    /// let id = RangeID::new(5, [-10,-5], [8,9], [5,10]).unwrap();
+    /// assert_eq!(id.as_z(), 5u8);
+    /// assert_eq!(id.max_xy(), 31u64);
+    /// ```
     fn max_xy(&self) -> u64 {
         XY_MAX[self.z as usize]
     }
 
+    /// 指定したインデックス差 `by` に基づき、この [`RangeID`] を垂直上方向に動かします。
+    ///
+    /// # パラメータ
+    /// * `by` — インデックス差
+    ///
+    /// # バリデーション
+    /// - Fインデックスがのいずれかが範囲外になる場合は[`Error::FOutOfRange`]を返します
+    ///
+    /// 移動
+    /// ```
+    /// # use kasane_logic::id::space_id::range::RangeID;
+    /// # use kasane_logic::error::Error;
+    /// # use crate::kasane_logic::id::space_id::SpaceID;
+    /// let mut id = RangeID::new(5, [-10,-5], [8,9], [5,10]).unwrap();
+    /// assert_eq!(id.as_f(), [-10,-5]);
+    ///
+    /// let _ = id.move_up(4).unwrap();
+    /// assert_eq!(id.as_f(), [-6, -1]);
+    /// ```
+    ///
+    /// 範囲外の検知によるエラー
+    /// ```
+    /// # use kasane_logic::id::space_id::range::RangeID;
+    /// # use kasane_logic::error::Error;
+    /// # use crate::kasane_logic::id::space_id::SpaceID;
+    /// let mut id = RangeID::new(5, [-10,-5], [8,9], [5,10]).unwrap();
+    /// assert_eq!(id.as_f(), [-10,-5]);
+    ///
+    /// assert_eq!(id.move_up(50), Err(Error::FOutOfRange { z: 5, f: 40 }));
+    /// ```
+    ///
     fn move_up(&mut self, by: u64) -> Result<(), Error> {
         self.move_f(by as i64)
     }
 
+    /// 指定したインデックス差 `by` に基づき、この [`RangeID`] を垂直下方向に動かします。
+    ///
+    /// # パラメータ
+    /// * `by` — インデックス差
+    ///
+    /// # バリデーション
+    /// - Fインデックスがのいずれかが範囲外になる場合は[`Error::FOutOfRange`]を返します
+    ///
+    /// 移動
+    /// ```
+    /// # use kasane_logic::id::space_id::range::RangeID;
+    /// # use kasane_logic::error::Error;
+    /// # use crate::kasane_logic::id::space_id::SpaceID;
+    /// let mut id = RangeID::new(5, [-10,-5], [8,9], [5,10]).unwrap();
+    /// assert_eq!(id.as_f(), [-10,-5]);
+    ///
+    /// let _ = id.move_down(4).unwrap();
+    /// assert_eq!(id.as_f(), [-14, -9]);
+    /// ```
+    ///
+    /// 範囲外の検知によるエラー
+    /// ```
+    /// # use kasane_logic::id::space_id::range::RangeID;
+    /// # use kasane_logic::error::Error;
+    /// # use crate::kasane_logic::id::space_id::SpaceID;
+    /// let mut id = RangeID::new(5, [-10,-5], [8,9], [5,10]).unwrap();
+    /// assert_eq!(id.as_f(), [-10,-5]);
+    ///
+    /// assert_eq!(id.move_down(50), Err(Error::FOutOfRange { z: 5, f: -60 }));
+    /// ```
+    ///
     fn move_down(&mut self, by: u64) -> Result<(), Error> {
         self.move_f(-(by as i64))
     }
 
+    /// 指定したインデックス差 `by` に基づき、この [`RangeID`] を北方向に動かします。
+    ///
+    /// # パラメータ
+    /// * `by` — インデックス差
+    ///
+    /// # バリデーション
+    /// - Yインデックスが範囲外になる場合は[`Error::YOutOfRange`]を返します
+    ///
+    /// 移動
+    /// ```
+    /// # use kasane_logic::id::space_id::range::RangeID;
+    /// # use kasane_logic::error::Error;
+    /// # use crate::kasane_logic::id::space_id::SpaceID;
+    /// let mut id = RangeID::new(5, [-10,-5], [8,9], [5,10]).unwrap();
+    /// assert_eq!(id.as_y(), [5,10]);
+    ///
+    /// let _ = id.move_north(4).unwrap();
+    /// assert_eq!(id.as_y(), [1, 6]);
+    /// ```
+    ///
+    /// 範囲外の検知によるエラー
+    /// ```
+    /// # use kasane_logic::id::space_id::range::RangeID;
+    /// # use kasane_logic::error::Error;
+    /// # use crate::kasane_logic::id::space_id::SpaceID;
+    /// let mut id = RangeID::new(5, [-10,-5], [8,9], [5,10]).unwrap();
+    /// assert_eq!(id.as_y(), [5,10]);
+    ///
+    /// assert_eq!(id.move_north(50), Err(Error::YOutOfRange { z: 5, y: 0 }));
+    /// ```
     fn move_north(&mut self, by: u64) -> Result<(), Error> {
-        self.move_x(by as i64)
+        self.move_y(-(by as i64))
     }
 
+    /// 指定したインデックス差 `by` に基づき、この [`RangeID`] を南方向に動かします。
+    ///
+    /// # パラメータ
+    /// * `by` — インデックス差
+    ///
+    /// # バリデーション
+    /// - Yインデックスが範囲外になる場合は[`Error::YOutOfRange`]を返します
+    ///
+    /// 移動
+    /// ```
+    /// # use kasane_logic::id::space_id::range::RangeID;
+    /// # use kasane_logic::error::Error;
+    /// # use crate::kasane_logic::id::space_id::SpaceID;
+    /// let mut id = RangeID::new(5, [-10,-5], [8,9], [5,10]).unwrap();
+    /// assert_eq!(id.as_y(), [5,10]);
+    ///
+    /// let _ = id.move_south(4).unwrap();
+    /// assert_eq!(id.as_y(), [9, 14]);
+    /// ```
+    ///
+    /// 範囲外の検知によるエラー
+    /// ```
+    /// # use kasane_logic::id::space_id::range::RangeID;
+    /// # use kasane_logic::error::Error;
+    /// # use crate::kasane_logic::id::space_id::SpaceID;
+    /// let mut id = RangeID::new(5, [-10,-5], [8,9], [5,10]).unwrap();
+    /// assert_eq!(id.as_y(), [5,10]);
+    ///
+    /// assert_eq!(id.move_south(50), Err(Error::YOutOfRange { z: 5, y: 55 }));
+    /// ```
     fn move_south(&mut self, by: u64) -> Result<(), Error> {
-        self.move_x(-(by as i64))
-    }
-
-    fn move_east(&mut self, by: u64) -> Result<(), Error> {
         self.move_y(by as i64)
     }
 
+    fn move_east(&mut self, by: u64) -> Result<(), Error> {
+        self.move_x(by as i64)
+    }
+
     fn move_west(&mut self, by: u64) -> Result<(), Error> {
-        self.move_y(-(by as i64))
+        self.move_x(-(by as i64))
     }
 
     fn move_f(&mut self, by: i64) -> Result<(), Error> {
@@ -528,6 +678,20 @@ impl SpaceID for RangeID {
         }
     }
 
+    /// [`RangeID`] の中心座標を[`Coordinate`]型で返します。
+    ///
+    /// 中心座標は空間IDの最も外側の頂点の8点の平均座標です。現実空間における空間IDは完全な直方体ではなく、緯度や高度によって歪みが発生していることに注意する必要があります。
+    ///
+    /// ```
+    /// # use kasane_logic::id::space_id::range::RangeID;
+    /// # use kasane_logic::error::Error;
+    /// # use crate::kasane_logic::id::space_id::SpaceID;
+    /// let id = RangeID::new(5, [-10,-5], [8,9], [5,10]).unwrap();
+    ///
+    /// let center: Coordinate = id.center();
+    /// println!("{:?}", center);
+    /// // Coordinate { latitude: 66.51326044311186, longitude: -78.75, altitude: -7340032.0 }
+    /// ```
     fn center(&self) -> Coordinate {
         let z = self.z;
 
@@ -542,6 +706,19 @@ impl SpaceID for RangeID {
         }
     }
 
+    /// [`RangeID`] の最も外側の頂点の8点の座標を[`Coordinate`]型の配列として返します。
+    ///
+    /// 現実空間における空間IDは完全な直方体ではなく、緯度や高度によって歪みが発生していることに注意する必要があります。
+    /// ```
+    /// # use kasane_logic::id::space_id::range::RangeID;
+    /// # use kasane_logic::error::Error;
+    /// # use crate::kasane_logic::id::space_id::SpaceID;
+    /// let id = RangeID::new(5, [-10,-5], [8,9], [5,10]).unwrap();
+    ///
+    /// let vertices: [Coordinate; 8] = id.vertices();
+    /// println!("{:?}", vertices);
+    /// // [Coordinate { latitude: 76.84081641443098, longitude: -90.0, altitude: -10485760.0 }, Coordinate { latitude: 76.84081641443098, longitude: -67.5, altitude: -10485760.0 },....]
+    /// ```
     fn vertices(&self) -> [Coordinate; 8] {
         let z = self.z;
 
@@ -576,6 +753,7 @@ impl SpaceID for RangeID {
 }
 
 impl From<RangeID> for EncodeID {
+    ///`SingleID`を[`EncodeID`]に変換します。物理的な範囲に変化はありません。
     fn from(id: RangeID) -> Self {
         let f_segment = Segment::<i64>::new(id.z, id.f);
         let x_segment = Segment::<u64>::new(id.z, id.x);
