@@ -3,7 +3,7 @@ use std::fmt;
 use crate::{
     error::Error,
     geometry::{
-        constants::{WGS84_A, WGS84_E2, WGS84_INV_F},
+        constants::{WGS84_A, WGS84_E2},
         ecef::Ecef,
     },
     id::space_id::single::SingleID,
@@ -186,7 +186,7 @@ impl From<Coordinate> for Ecef {
         let y = (n + h) * cos_lat * sin_lon;
         let z = (n * (1.0 - WGS84_E2) + h) * sin_lat;
 
-        Ecef { x, y, z }
+        Ecef::new(x, y, z)
     }
 }
 
