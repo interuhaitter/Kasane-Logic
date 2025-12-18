@@ -1,9 +1,10 @@
+use core::f64;
 use std::collections::HashSet;
 
 use crate::{
     error::Error,
     geometry::{constants::WGS84_A, coordinate::Coordinate, ecef::Ecef},
-    id::space_id::{constants::MAX_ZOOM_LEVEL, single::SingleID},
+    id::space_id::{self, constants::MAX_ZOOM_LEVEL, single::SingleID},
 };
 pub fn line(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = SingleID>, Error> {
     if z > MAX_ZOOM_LEVEL as u8 {
@@ -50,3 +51,29 @@ pub fn line(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = 
 
     Ok(iter)
 }
+fn coordinate_to_matrix(p: Coordinate, z: u8) -> [f64; 3] {
+    let lat = p.as_latitude();
+    let lon = p.as_longitude();
+    let alt = p.as_altitude();
+
+    // ---- 高度 h -> f (Python の h_to_f を Rust に移植) ----
+    let factor = 2_f64.powi(z as i32 - 25); // 2^(z-25)
+    let f = factor * alt;
+
+    // ---- 経度 lon -> x ----
+    let n = 2u64.pow(z as u32) as f64;
+    let x = (lon + 180.0) / 360.0 * n;
+
+    // ---- 緯度 lat -> y (Web Mercator) ----
+    let lat_rad = lat.to_radians();
+    let y = (1.0 - (lat_rad.tan() + 1.0 / lat_rad.cos()).ln() / std::f64::consts::PI) / 2.0 * n;
+    [f, x, y]
+}
+// fn line_DDA(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = SingleID>, Error> {
+//     if z > MAX_ZOOM_LEVEL as u8 {
+//         return Err(Error::ZOutOfRange { z });
+//     }
+//     let vp1 = coordinate_to_matrix(a, z);
+//     let vp2 = coordinate_to_matrix(b, z);
+
+// }
