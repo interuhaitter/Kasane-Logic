@@ -1,5 +1,4 @@
 use core::f64;
-use std::collections::HashSet;
 
 use crate::{
     error::Error,
@@ -31,26 +30,29 @@ pub fn line(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = 
 
     let t_iter = (0..=steps).map(move |i| i as f64 / steps as f64);
 
-    let mut seen = HashSet::new();
+    let mut last_id = None;
 
     let iter = t_iter.filter_map(move |t| {
         let x = ecef_a.as_x() * (1.0 - t) + ecef_b.as_x() * t;
         let y = ecef_a.as_y() * (1.0 - t) + ecef_b.as_y() * t;
         let z_pos = ecef_a.as_z() * (1.0 - t) + ecef_b.as_z() * t;
 
-        if let Ok(voxel_id) = Ecef::new(x, y, z_pos).to_id(z) {
-            if seen.insert(voxel_id.clone()) {
-                Some(voxel_id)
-            } else {
-                None
-            }
-        } else {
-            None
-        }
+        Ecef::new(x, y, z_pos)
+            .to_id(z) // Result<VoxelId, E>
+            .ok() // Option<VoxelId> に変換。ErrならここでNoneになり終了
+            .filter(|id| {
+                // 現在のIDが直前のIDと異なる場合のみ true を返す
+                let is_new = Some(id) != last_id.as_ref();
+                if is_new {
+                    last_id = Some(id.clone()); // 新しいIDなら記録を更新
+                }
+                is_new
+            })
     });
 
     Ok(iter)
 }
+
 fn coordinate_to_matrix(p: Coordinate, z: u8) -> [f64; 3] {
     let lat = p.as_latitude();
     let lon = p.as_longitude();
@@ -75,5 +77,28 @@ fn coordinate_to_matrix(p: Coordinate, z: u8) -> [f64; 3] {
 //     }
 //     let vp1 = coordinate_to_matrix(a, z);
 //     let vp2 = coordinate_to_matrix(b, z);
-
+//     let df_total = vp2[0] - vp1[0];
+//     let dx_total = vp2[1] - vp1[1];
+//     let dy_total = vp2[2] - vp1[2];
+//     let id1 = SingleID::new(
+//         z,
+//         vp1[0].floor() as i64,
+//         vp1[1].floor() as u64,
+//         vp1[2].floor() as u64,
+//     );
+//     let id2 = SingleID::new(
+//         z,
+//         vp2[0].floor() as i64,
+//         vp2[1].floor() as u64,
+//         vp2[2].floor() as u64,
+//     );
+//     let length: f64 = (df_total * df_total + dx_total * dx_total + dy_total * dy_total).sqrt();
+//     let iter = std::iter::successors(Some(id1), |&prev| {
+//         if prev != id2 {
+//             Some(SingleID::new(1, 1, 1, 1))
+//         } else {
+//             None
+//         }
+//     });
+//     Ok(iter)
 // }
