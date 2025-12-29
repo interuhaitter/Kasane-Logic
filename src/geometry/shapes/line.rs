@@ -30,24 +30,22 @@ pub fn line(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = 
 
     let t_iter = (0..=steps).map(move |i| i as f64 / steps as f64);
 
-    let mut last_id = None;
+    let mut seen = HashSet::new();
 
     let iter = t_iter.filter_map(move |t| {
         let x = ecef_a.as_x() * (1.0 - t) + ecef_b.as_x() * t;
         let y = ecef_a.as_y() * (1.0 - t) + ecef_b.as_y() * t;
         let z_pos = ecef_a.as_z() * (1.0 - t) + ecef_b.as_z() * t;
 
-        Ecef::new(x, y, z_pos)
-            .to_id(z) // Result<VoxelId, E>
-            .ok() // Option<VoxelId> に変換。ErrならここでNoneになり終了
-            .filter(|id| {
-                // 現在のIDが直前のIDと異なる場合のみ true を返す
-                let is_new = Some(id) != last_id.as_ref();
-                if is_new {
-                    last_id = Some(id.clone()); // 新しいIDなら記録を更新
-                }
-                is_new
-            })
+        if let Ok(voxel_id) = Ecef::new(x, y, z_pos).to_id(z) {
+            if seen.insert(voxel_id.clone()) {
+                Some(voxel_id)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     });
 
     Ok(iter)
@@ -71,6 +69,7 @@ fn coordinate_to_matrix(p: Coordinate, z: u8) -> [f64; 3] {
     let y = (1.0 - (lat_rad.tan() + 1.0 / lat_rad.cos()).ln() / std::f64::consts::PI) / 2.0 * n;
     [f, x, y]
 }
+
 fn line_DDA(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = SingleID>, Error> {
     if z > MAX_ZOOM_LEVEL as u8 {
         return Err(Error::ZOutOfRange { z });
@@ -93,11 +92,10 @@ fn line_DDA(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = 
         vp2[2].floor() as u64,
     );
     let length: f64 = (df_total * df_total + dx_total * dx_total + dy_total * dy_total).sqrt();
-    let iter = std::iter::successors(Some(id1), |&prev| {
-        if prev != id2 {
-        } else {
-            None
-        }
-    });
+    let df = length / df_total;
+    let dx = length / dx_total;
+    let dy = length / dy_total;
+    let mut voxels: Vec<SingleID> = Vec::new();
+    let iter = voxels.into_iter();
     Ok(iter)
 }
