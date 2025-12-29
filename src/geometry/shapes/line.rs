@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, f64};
 
 use crate::{
     error::Error,
@@ -70,32 +70,84 @@ fn coordinate_to_matrix(p: Coordinate, z: u8) -> [f64; 3] {
     [f, x, y]
 }
 
-fn line_DDA(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = SingleID>, Error> {
+fn line_3DDDA(
+    z: u8,
+    a: Coordinate,
+    b: Coordinate,
+) -> Result<impl Iterator<Item = SingleID>, Error> {
     if z > MAX_ZOOM_LEVEL as u8 {
         return Err(Error::ZOutOfRange { z });
     }
     let vp1 = coordinate_to_matrix(a, z);
     let vp2 = coordinate_to_matrix(b, z);
-    let df_total = vp2[0] - vp1[0];
-    let dx_total = vp2[1] - vp1[1];
-    let dy_total = vp2[2] - vp1[2];
-    let id1 = SingleID::new(
-        z,
-        vp1[0].floor() as i64,
-        vp1[1].floor() as u64,
-        vp1[2].floor() as u64,
-    );
-    let id2 = SingleID::new(
-        z,
-        vp2[0].floor() as i64,
-        vp2[1].floor() as u64,
-        vp2[2].floor() as u64,
-    );
+    let df_total = (vp2[0] - vp1[0]).abs();
+    let dx_total = (vp2[1] - vp1[1]).abs();
+    let dy_total = (vp2[2] - vp1[2]).abs();
+    let i1 = vp1[0].floor() as i64;
+    let j1 = vp1[1].floor() as u64;
+    let k1 = vp1[2].floor() as u64;
+    let i2 = vp2[0].floor() as i64;
+    let j2 = vp2[1].floor() as u64;
+    let k2 = vp2[2].floor() as u64;
     let length: f64 = (df_total * df_total + dx_total * dx_total + dy_total * dy_total).sqrt();
-    let df = length / df_total;
-    let dx = length / dx_total;
-    let dy = length / dy_total;
+    let df = if vp2[0] != vp1[0] {
+        (length / df_total).abs()
+    } else {
+        f64::INFINITY
+    };
+    let dx = if vp2[1] != vp1[1] {
+        (length / dx_total).abs()
+    } else {
+        f64::INFINITY
+    };
+    let dy = if vp2[2] != vp1[2] {
+        (length / dy_total).abs()
+    } else {
+        f64::INFINITY
+    };
+    let mut tf = if i2 > i1 {
+        (1.0 - vp1[0] + vp1[0].floor()) * df
+    } else {
+        (vp1[0] - vp1[0].floor()) * df
+    };
+    let mut tx = if j2 > j1 {
+        (1.0 - vp1[1] + vp1[1].floor()) * dx
+    } else {
+        (vp1[1] - vp1[1].floor()) * dx
+    };
+    let mut ty = if k2 > k1 {
+        (1.0 - vp1[2] + vp1[2].floor()) * dy
+    } else {
+        (vp1[2] - vp1[2].floor()) * dy
+    };
     let mut voxels: Vec<SingleID> = Vec::new();
+    voxels.push(SingleID::new(z, i1, j1, k1)?);
+    let mut current_f = i1;
+    let mut current_x = j1;
+    let mut current_y = k1;
+    let sign_i = (vp2[0] - vp1[0]).signum() as i64;
+    let sign_j = (vp2[0] - vp1[0]).is_sign_positive();
+    let sign_k = (vp2[0] - vp1[0]).is_sign_positive();
+    while current_f != i2 && current_x != j2 && current_y != k2 {
+        if tf > tx {
+            if ty > tx {
+                tx += dx;
+                current_x = if sign_j { current_x + 1 } else { current_x - 1 };
+            } else {
+                ty += dy;
+                current_y = if sign_k { current_y + 1 } else { current_y - 1 };
+            }
+        } else {
+            if tf > ty {
+                ty += dy;
+                current_y = if sign_k { current_y + 1 } else { current_y - 1 };
+            } else {
+                tf += df;
+                current_f += sign_i;
+            }
+        }
+        voxels.push(SingleID::new(z, current_f, current_x, current_y)?);
+    }
     let iter = voxels.into_iter();
     Ok(iter)
 }
