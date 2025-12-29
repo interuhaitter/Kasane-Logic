@@ -84,11 +84,11 @@ fn line_3DDDA(
     let dx_total = (vp2[1] - vp1[1]).abs();
     let dy_total = (vp2[2] - vp1[2]).abs();
     let i1 = vp1[0].floor() as i64;
-    let j1 = vp1[1].floor() as u64;
-    let k1 = vp1[2].floor() as u64;
+    let j1 = vp1[1].floor() as i64;
+    let k1 = vp1[2].floor() as i64;
     let i2 = vp2[0].floor() as i64;
-    let j2 = vp2[1].floor() as u64;
-    let k2 = vp2[2].floor() as u64;
+    let j2 = vp2[1].floor() as i64;
+    let k2 = vp2[2].floor() as i64;
     let length: f64 = (df_total * df_total + dx_total * dx_total + dy_total * dy_total).sqrt();
     let df = if vp2[0] != vp1[0] {
         (length / df_total).abs()
@@ -121,32 +121,37 @@ fn line_3DDDA(
         (vp1[2] - vp1[2].floor()) * dy
     };
     let mut voxels: Vec<SingleID> = Vec::new();
-    voxels.push(SingleID::new(z, i1, j1, k1)?);
+    voxels.push(SingleID::new(z, i1, j1 as u64, k1 as u64)?);
     let mut current_f = i1;
     let mut current_x = j1;
     let mut current_y = k1;
     let sign_i = (vp2[0] - vp1[0]).signum() as i64;
-    let sign_j = (vp2[0] - vp1[0]).is_sign_positive();
-    let sign_k = (vp2[0] - vp1[0]).is_sign_positive();
-    while current_f != i2 && current_x != j2 && current_y != k2 {
+    let sign_j = (vp2[1] - vp1[1]).signum() as i64;
+    let sign_k = (vp2[2] - vp1[2]).signum() as i64;
+    while current_f != i2 || current_x != j2 || current_y != k2 {
         if tf > tx {
             if ty > tx {
                 tx += dx;
-                current_x = if sign_j { current_x + 1 } else { current_x - 1 };
+                current_x += sign_j;
             } else {
                 ty += dy;
-                current_y = if sign_k { current_y + 1 } else { current_y - 1 };
+                current_y += sign_k;
             }
         } else {
             if tf > ty {
                 ty += dy;
-                current_y = if sign_k { current_y + 1 } else { current_y - 1 };
+                current_y += sign_k;
             } else {
                 tf += df;
                 current_f += sign_i;
             }
         }
-        voxels.push(SingleID::new(z, current_f, current_x, current_y)?);
+        voxels.push(SingleID::new(
+            z,
+            current_f,
+            current_x as u64,
+            current_y as u64,
+        )?);
     }
     let iter = voxels.into_iter();
     Ok(iter)
