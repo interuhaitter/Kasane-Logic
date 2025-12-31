@@ -197,7 +197,7 @@ pub fn line_dda(
             current[pull_index[1]] as u64,
             current[pull_index[2]] as u64,
         )?);
-        if tm_int > max_steps + 10 {
+        if tm_int > max_steps + 1 {
             print!("WARNING:無限ループを検知!");
             break;
         }
