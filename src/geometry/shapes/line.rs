@@ -132,7 +132,7 @@ pub fn line_dda(
     } else {
         (vp1[2] - vp1[2].floor()) * d_o2 - tm
     };
-    let tm_int = 0;
+    let mut tm_int: u16 = 0;
     let mut voxels: Vec<SingleID> = Vec::new();
     voxels.push(SingleID::new(z, i1, j1 as u64, k1 as u64)?);
     let mut current = [i1, j1, k1];
@@ -186,7 +186,14 @@ pub fn line_dda(
                 }
             }
         }
+        tm_int += 1;
         current[0] += sign_i;
+        voxels.push(SingleID::new(
+            z,
+            current[3 - max_flag],
+            current[3 - other_flag_2] as u64,
+            current[3 - other_flag_1] as u64,
+        )?);
         if steps > max_steps {
             print!("WARNING:無限ループを検知!");
             break;
