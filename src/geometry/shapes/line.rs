@@ -15,10 +15,10 @@ pub fn line(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = 
     let ecef_b: Ecef = b.into();
 
     // ステップ数計算
-    let dx = ecef_b.as_x() - ecef_a.as_x();
-    let dy = ecef_b.as_y() - ecef_a.as_y();
+    let d_o1 = ecef_b.as_x() - ecef_a.as_x();
+    let d_o2 = ecef_b.as_y() - ecef_a.as_y();
     let dz = ecef_b.as_z() - ecef_a.as_z();
-    let distance = (dx * dx + dy * dy + dz * dz).sqrt();
+    let distance = (d_o1 * d_o1 + d_o2 * d_o2 + dz * dz).sqrt();
 
     let min_lat_rad = a
         .as_latitude()
@@ -80,84 +80,101 @@ pub fn line_dda(
     }
     let vp1 = coordinate_to_matrix(a, z);
     let vp2 = coordinate_to_matrix(b, z);
-    let df_total = (vp2[0] - vp1[0]).abs();
-    let dx_total = (vp2[1] - vp1[1]).abs();
-    let dy_total = (vp2[2] - vp1[2]).abs();
-    let i1 = vp1[0].floor() as i64;
-    let j1 = vp1[1].floor() as i64;
-    let k1 = vp1[2].floor() as i64;
-    let i2 = vp2[0].floor() as i64;
-    let j2 = vp2[1].floor() as i64;
-    let k2 = vp2[2].floor() as i64;
-    let length: f64 = (df_total * df_total + dx_total * dx_total + dy_total * dy_total).sqrt();
-    let df = if vp2[0] != vp1[0] {
-        length / df_total
+    let d_total = [
+        (vp2[0] - vp1[0]).abs(),
+        (vp2[0] - vp1[0]).abs(),
+        (vp2[2] - vp1[2]).abs(),
+    ];
+    let max_d = d_total[0].max(d_total[1]).max(d_total[2]);
+    let max_flag: usize = if max_d == d_total[0] {
+        0
+    } else if max_d == d_total[1] {
+        1
+    } else {
+        2
+    };
+    let other_flag_1 = (max_flag + 1) % 3;
+    let other_flag_2 = (max_flag + 2) % 3;
+    let i1 = vp1[max_flag].floor() as i64;
+    let j1 = vp1[other_flag_1].floor() as i64;
+    let k1 = vp1[other_flag_2].floor() as i64;
+    let i2 = vp2[max_flag].floor() as i64;
+    let j2 = vp2[other_flag_1].floor() as i64;
+    let k2 = vp2[other_flag_2].floor() as i64;
+    let length: f64 = (d_total[max_flag] * d_total[max_flag]
+        + d_total[other_flag_1] * d_total[other_flag_1]
+        + d_total[other_flag_2] * d_total[other_flag_2])
+        .sqrt();
+    let d_o1 = if vp2[other_flag_1] != vp1[other_flag_1] {
+        d_total[max_flag] / d_total[other_flag_1]
     } else {
         f64::INFINITY
     };
-    let dx = if vp2[1] != vp1[1] {
-        length / dx_total
+    let d_o2 = if vp2[other_flag_2] != vp1[other_flag_2] {
+        d_total[max_flag] / d_total[other_flag_2]
     } else {
         f64::INFINITY
     };
-    let dy = if vp2[2] != vp1[2] {
-        length / dy_total
-    } else {
-        f64::INFINITY
-    };
-    let mut tf = if i2 > i1 {
-        (1.0 - vp1[0] + vp1[0].floor()) * df
+    let mut tm = if i2 > i1 {
+        1.0 - vp1[other_flag_1] + vp1[other_flag_1].floor()
     } else if i2 == i1 {
         f64::INFINITY
     } else {
-        (vp1[0] - vp1[0].floor()) * df
+        vp1[other_flag_1] - vp1[other_flag_1].floor()
     };
-    let mut tx = if j2 > j1 {
-        (1.0 - vp1[1] + vp1[1].floor()) * dx
+    let mut to1 = if j2 > j1 {
+        (1.0 - vp1[other_flag_1] + vp1[other_flag_1].floor()) * d_o1 - tm
     } else if j2 == j1 {
         f64::INFINITY
     } else {
-        (vp1[1] - vp1[1].floor()) * dx
+        (vp1[other_flag_1] - vp1[other_flag_1].floor()) * d_o1 - tm
     };
-    let mut ty = if k2 > k1 {
-        (1.0 - vp1[2] + vp1[2].floor()) * dy
+    let mut to2 = if k2 > k1 {
+        (1.0 - vp1[2] + vp1[2].floor()) * d_o2
     } else if k2 == k1 {
         f64::INFINITY
     } else {
-        (vp1[2] - vp1[2].floor()) * dy
+        (vp1[2] - vp1[2].floor()) * d_o2
     };
     let mut voxels: Vec<SingleID> = Vec::new();
     voxels.push(SingleID::new(z, i1, j1 as u64, k1 as u64)?);
-    let mut current_f = i1;
-    let mut current_x = j1;
-    let mut current_y = k1;
-    let sign_i = (vp2[0] - vp1[0]).signum() as i64;
-    let sign_j = (vp2[1] - vp1[1]).signum() as i64;
-    let sign_k = (vp2[2] - vp1[2]).signum() as i64;
-    while current_f != i2 || current_x != j2 || current_y != k2 {
+    let mut current_i = i1;
+    let mut current_j = j1;
+    let mut current_k = k1;
+    let sign_i = (vp2[max_flag] - vp1[max_flag]).signum() as i64;
+    let sign_j = (vp2[other_flag_1] - vp1[other_flag_1]).signum() as i64;
+    let sign_k = (vp2[other_flag_2] - vp1[other_flag_2]).signum() as i64;
+    let max_steps = (i2 - i1).abs() + (j2 - j1).abs() + (k2 - k1).abs() + 3;
+    let mut steps = 0;
+    while current_i != i2 || current_j != j2 || current_k != k2 {
+        steps += 1;
         if tf > tx {
             if ty > tx {
-                tx += dx;
-                current_x += sign_j;
+                tx += d_o1;
+                current_j += sign_j;
             } else {
-                ty += dy;
-                current_y += sign_k;
+                ty += d_o2;
+                current_k += sign_k;
             }
         } else {
             if tf > ty {
-                ty += dy;
-                current_y += sign_k;
+                ty += d_o2;
+                current_k += sign_k;
             } else {
-                tf += df;
-                current_f += sign_i;
+                tf += d_max;
+                current_i += sign_i;
             }
         }
         voxels.push(SingleID::new(
             z,
-            current_f,
-            current_x as u64,
-            current_y as u64,
+            current_i,
+            current_j as u64,
+            current_k as u64,
         )?);
+        if steps > max_steps {
+            print!("WARNING:無限ループを検知!");
+            break;
+        }
     }
     let iter = voxels.into_iter();
     Ok(iter)
