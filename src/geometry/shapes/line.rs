@@ -82,7 +82,7 @@ pub fn line_dda(
     let vp2 = coordinate_to_matrix(b, z);
     let d_total = [
         (vp2[0] - vp1[0]).abs(),
-        (vp2[0] - vp1[0]).abs(),
+        (vp2[1] - vp1[1]).abs(),
         (vp2[2] - vp1[2]).abs(),
     ];
     let max_d = d_total[0].max(d_total[1]).max(d_total[2]);
@@ -132,14 +132,19 @@ pub fn line_dda(
     } else {
         (vp1[2] - vp1[2].floor()) * d_o2 - tm
     };
-    let mut tm_int: u16 = 0;
-    let max_steps = (i2 - i1).abs() as u16;
+    let mut tm_int: u64 = 0;
+    let max_steps = (i2 - i1).abs() as u64;
     let mut voxels: Vec<SingleID> = Vec::new();
     voxels.push(SingleID::new(z, i1, j1 as u64, k1 as u64)?);
     let mut current = [i1, j1, k1];
     let sign_i = (vp2[max_flag] - vp1[max_flag]).signum() as i64;
     let sign_j = (vp2[other_flag_1] - vp1[other_flag_1]).signum() as i64;
     let sign_k = (vp2[other_flag_2] - vp1[other_flag_2]).signum() as i64;
+    let pull_index = [
+        (3 - max_flag) % 3,
+        (3 - other_flag_2) % 3,
+        (3 - other_flag_1) % 3,
+    ]; //0,1,2->0,2,1
     while current != [i2, j2, k2] {
         if to1 > to2 {
             if tm_int as f64 > to2 {
@@ -147,18 +152,18 @@ pub fn line_dda(
                 current[2] += sign_k;
                 voxels.push(SingleID::new(
                     z,
-                    current[3 - max_flag],
-                    current[3 - other_flag_2] as u64,
-                    current[3 - other_flag_1] as u64,
+                    current[pull_index[0]],
+                    current[pull_index[1]] as u64,
+                    current[pull_index[2]] as u64,
                 )?);
                 if (tm_int as f64) > to1 {
                     to1 += d_o2;
                     current[1] += sign_j;
                     voxels.push(SingleID::new(
                         z,
-                        current[3 - max_flag],
-                        current[3 - other_flag_2] as u64,
-                        current[3 - other_flag_1] as u64,
+                        current[pull_index[0]],
+                        current[pull_index[1]] as u64,
+                        current[pull_index[2]] as u64,
                     )?);
                 }
             }
@@ -168,18 +173,18 @@ pub fn line_dda(
                 current[1] += sign_j;
                 voxels.push(SingleID::new(
                     z,
-                    current[3 - max_flag],
-                    current[3 - other_flag_2] as u64,
-                    current[3 - other_flag_1] as u64,
+                    current[pull_index[0]],
+                    current[pull_index[1]] as u64,
+                    current[pull_index[2]] as u64,
                 )?);
                 if (tm_int as f64) > to2 {
                     to2 += d_o2;
                     current[2] += sign_k;
                     voxels.push(SingleID::new(
                         z,
-                        current[3 - max_flag],
-                        current[3 - other_flag_2] as u64,
-                        current[3 - other_flag_1] as u64,
+                        current[pull_index[0]],
+                        current[pull_index[1]] as u64,
+                        current[pull_index[2]] as u64,
                     )?);
                 }
             }
@@ -188,11 +193,11 @@ pub fn line_dda(
         current[0] += sign_i;
         voxels.push(SingleID::new(
             z,
-            current[3 - max_flag],
-            current[3 - other_flag_2] as u64,
-            current[3 - other_flag_1] as u64,
+            current[pull_index[0]],
+            current[pull_index[1]] as u64,
+            current[pull_index[2]] as u64,
         )?);
-        if tm_int > max_steps {
+        if tm_int > max_steps + 10 {
             print!("WARNING:無限ループを検知!");
             break;
         }
