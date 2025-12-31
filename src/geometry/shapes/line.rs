@@ -101,10 +101,6 @@ pub fn line_dda(
     let i2 = vp2[max_flag].floor() as i64;
     let j2 = vp2[other_flag_1].floor() as i64;
     let k2 = vp2[other_flag_2].floor() as i64;
-    let length: f64 = (d_total[max_flag] * d_total[max_flag]
-        + d_total[other_flag_1] * d_total[other_flag_1]
-        + d_total[other_flag_2] * d_total[other_flag_2])
-        .sqrt();
     let d_o1 = if vp2[other_flag_1] != vp1[other_flag_1] {
         d_total[max_flag] / d_total[other_flag_1]
     } else {
@@ -130,47 +126,67 @@ pub fn line_dda(
         (vp1[other_flag_1] - vp1[other_flag_1].floor()) * d_o1 - tm
     };
     let mut to2 = if k2 > k1 {
-        (1.0 - vp1[2] + vp1[2].floor()) * d_o2
+        (1.0 - vp1[2] + vp1[2].floor()) * d_o2 - tm
     } else if k2 == k1 {
         f64::INFINITY
     } else {
-        (vp1[2] - vp1[2].floor()) * d_o2
+        (vp1[2] - vp1[2].floor()) * d_o2 - tm
     };
+    let tm_int = 0;
     let mut voxels: Vec<SingleID> = Vec::new();
     voxels.push(SingleID::new(z, i1, j1 as u64, k1 as u64)?);
-    let mut current_i = i1;
-    let mut current_j = j1;
-    let mut current_k = k1;
+    let mut current = [i1, j1, k1];
     let sign_i = (vp2[max_flag] - vp1[max_flag]).signum() as i64;
     let sign_j = (vp2[other_flag_1] - vp1[other_flag_1]).signum() as i64;
     let sign_k = (vp2[other_flag_2] - vp1[other_flag_2]).signum() as i64;
     let max_steps = (i2 - i1).abs() + (j2 - j1).abs() + (k2 - k1).abs() + 3;
     let mut steps = 0;
-    while current_i != i2 || current_j != j2 || current_k != k2 {
+    while current != [i2, j2, k2] {
         steps += 1;
-        if tf > tx {
-            if ty > tx {
-                tx += d_o1;
-                current_j += sign_j;
-            } else {
-                ty += d_o2;
-                current_k += sign_k;
+        if to1 > to2 {
+            if tm_int as f64 > to2 {
+                to2 += d_o2;
+                current[2] += sign_k;
+                voxels.push(SingleID::new(
+                    z,
+                    current[3 - max_flag],
+                    current[3 - other_flag_2] as u64,
+                    current[3 - other_flag_1] as u64,
+                )?);
+                if (tm_int as f64) > to1 {
+                    to1 += d_o2;
+                    current[1] += sign_j;
+                    voxels.push(SingleID::new(
+                        z,
+                        current[3 - max_flag],
+                        current[3 - other_flag_2] as u64,
+                        current[3 - other_flag_1] as u64,
+                    )?);
+                }
             }
         } else {
-            if tf > ty {
-                ty += d_o2;
-                current_k += sign_k;
-            } else {
-                tf += d_max;
-                current_i += sign_i;
+            if tm_int as f64 > to1 {
+                to1 += d_o1;
+                current[1] += sign_j;
+                voxels.push(SingleID::new(
+                    z,
+                    current[3 - max_flag],
+                    current[3 - other_flag_2] as u64,
+                    current[3 - other_flag_1] as u64,
+                )?);
+                if (tm_int as f64) > to2 {
+                    to2 += d_o2;
+                    current[2] += sign_k;
+                    voxels.push(SingleID::new(
+                        z,
+                        current[3 - max_flag],
+                        current[3 - other_flag_2] as u64,
+                        current[3 - other_flag_1] as u64,
+                    )?);
+                }
             }
         }
-        voxels.push(SingleID::new(
-            z,
-            current_i,
-            current_j as u64,
-            current_k as u64,
-        )?);
+        current[0] += sign_i;
         if steps > max_steps {
             print!("WARNING:無限ループを検知!");
             break;
