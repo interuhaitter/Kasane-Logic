@@ -126,7 +126,7 @@ pub fn line_dda(
         (vp1[other_flag_1] - vp1[other_flag_1].floor()) * d_o1 - tm
     };
     let mut to2 = if k2 > k1 {
-        (1.0 - vp1[2] + vp1[2].floor()) * d_o2 - tm
+        (1.0 - vp1[other_flag_2] + vp1[other_flag_2].floor()) * d_o2 - tm
     } else if k2 == k1 {
         f64::INFINITY
     } else {
@@ -144,7 +144,7 @@ pub fn line_dda(
         (3 - max_flag) % 3,
         (3 - other_flag_2) % 3,
         (3 - other_flag_1) % 3,
-    ]; //0,1,2->0,2,1
+    ];
     while current != [i2, j2, k2] {
         if to1 > to2 {
             if tm_int as f64 > to2 {
