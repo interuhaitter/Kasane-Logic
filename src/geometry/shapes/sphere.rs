@@ -1,123 +1,85 @@
-use std::collections::HashSet;
-
 use crate::{
-    error::Error,
-    geometry::{coordinate::Coordinate, ecef::Ecef},
+    geometry::{constants::WGS84_A,coordinate::Coordinate,ecef::Ecef,},
     id::space_id::single::SingleID,
+    id::space_id::SpaceID
 };
 
-
-trait RoundTo {
-    fn round_to(self, digits: u32) -> f64;
+#[derive(Debug, Clone, Copy)]
+pub enum VoxelAxis {
+    X,
+    Y,
+    F,
 }
 
-impl RoundTo for f64 {
-    fn round_to(self, digits: u32) -> f64 {
-        let factor = 10f64.powi(digits as i32);
-        (self * factor).round() / factor
+
+
+impl Coordinate {
+    pub fn distance(&self, other: &Coordinate) -> f64 {
+        let e1: Ecef = (*self).into();
+        let e2: Ecef = (*other).into();
+        ((e1.as_x() - e2.as_x()).powi(2)
+        + (e1.as_y() - e2.as_y()).powi(2)
+        + (e1.as_z() - e2.as_z()).powi(2))
+        .sqrt()
     }
 }
 
-
-pub fn difference_between_two_point(p1: &Coordinate, p2: &Coordinate) -> f64 {
-    let e1: Ecef = (*p1).into();
-    let e2: Ecef = (*p2).into();
-
-    ((e1.x - e2.x).powi(2)
-        + (e1.y - e2.y).powi(2)
-        + (e1.z - e2.z).powi(2))
-        .sqrt()
-}
-
-pub fn get_length_of_a_voxel(z: u8, axis: &str) -> f64 {
-    let vl_xy = (40075016.68 / 2f64.powi(z as i32)).round_to(2);
-    let vl_f = (2f64.powi(25 - z as i32)).round_to(2);
+/// ===============================
+/// voxel 1辺の長さ（m）
+/// ===============================
+pub fn voxel_length(z: u8, axis: VoxelAxis) -> f64 {
+    let n = 2f64.powi(z as i32);
 
     match axis {
-        "x" | "y" => vl_xy,
-        "f" => vl_f,
-        _ => panic!("invalid axis: {}", axis),
+        // 赤道周長 = 2πa
+        VoxelAxis::X | VoxelAxis::Y => 2.0 * std::f64::consts::PI * WGS84_A / n,
+        // F方向（高度）
+        VoxelAxis::F => 2f64.powi(25 - z as i32),
     }
 }
 
-pub fn center_of_voxel_to_point(voxel: &SingleID) -> Result<(u8, Coordinate), Error> {
-    let z = voxel.z;
-
-    let f = voxel.f as f64 + 0.5;
-    let x = voxel.x as f64 + 0.5;
-    let y = voxel.y as f64 + 0.5;
-
-    let n = 2f64.powi(z as i32);
-    let h = 2f64.powi(25);
-
-    let longitude = 180.0 * (2.0 * x / n - 1.0);
-
-    let lat_rad = 2.0
-        * ((1.0
-            - 2.0
-                / (((1.0 - 2.0 * y / n) * std::f64::consts::PI).exp() + 1.0))
-            .atan());
-
-    let latitude = lat_rad.to_degrees();
-    let altitude = h * f / n;
-
-    let coordinate = Coordinate::new(latitude, longitude, altitude)?;
-
-    Ok((z, coordinate))
-}
-
-pub fn get_voxels_inside_sphere(
+pub fn sphere<'a>(
     z: u8,
-    point: &Coordinate,
-    mr: f64,
-) -> Result<HashSet<SingleID>, Error> {
-    let mut voxel_ids = HashSet::new();
+    center: &'a Coordinate,
+    radius: f64,
+) -> impl Iterator<Item = SingleID> + 'a {
+    let voxel_diag_half = voxel_length(z, VoxelAxis::X)* 3.0_f64.sqrt() / 2.0;
+    let center_ecef: Ecef = (*center).into();
 
-    let l = get_length_of_a_voxel(z, "x");
-    let epsilon = l * 3.0_f64.sqrt() / 2.0;
-
-    let ecef_center: Ecef = (*point).into();
-
-    let mut corner_voxels = Vec::new();
-
-    for i in 0..2 {
-        for j in 0..2 {
-            for k in 0..2 {
-                let dx = if i == 0 { mr } else { -mr };
-                let dy = if j == 0 { mr } else { -mr };
-                let dz = if k == 0 { mr } else { -mr };
-
-                let ecef = Ecef::new(
-                    ecef_center.x + dx,
-                    ecef_center.y + dy,
-                    ecef_center.z + dz,
+    // 球の8頂点 → 探索範囲推定
+    let mut corners = Vec::with_capacity(8);
+    for &sx in &[1.0, -1.0] {
+        for &sy in &[1.0, -1.0] {
+            for &sz in &[1.0, -1.0] {
+                let e = Ecef::new(
+                    center_ecef.as_x() + radius * sx,
+                    center_ecef.as_y() + radius * sy,
+                    center_ecef.as_z() + radius * sz,
                 );
-
-                corner_voxels.push(ecef.to_id(z)?);
-            }
-        }
-    }
-
-    let x_min = corner_voxels.iter().map(|v| v.x).min().unwrap();
-    let x_max = corner_voxels.iter().map(|v| v.x).max().unwrap();
-    let y_min = corner_voxels.iter().map(|v| v.y).min().unwrap();
-    let y_max = corner_voxels.iter().map(|v| v.y).max().unwrap();
-    let f_min = corner_voxels.iter().map(|v| v.f).min().unwrap();
-    let f_max = corner_voxels.iter().map(|v| v.f).max().unwrap();
-
-    for x in x_min..=x_max {
-        for y in y_min..=y_max {
-            for f in f_min..=f_max {
-                let voxel = SingleID::new(z, f, x, y)?;
-
-                let (_, center) = center_of_voxel_to_point(&voxel)?;
-
-                if difference_between_two_point(point, &center) <= mr + epsilon {
-                    voxel_ids.insert(voxel);
+                if let Ok(id) = e.to_id(z) {
+                    corners.push(id);
                 }
             }
         }
     }
 
-    Ok(voxel_ids)
+    let x_min = corners.iter().map(|v| v.x).min().unwrap();
+    let x_max = corners.iter().map(|v| v.x).max().unwrap();
+    let y_min = corners.iter().map(|v| v.y).min().unwrap();
+    let y_max = corners.iter().map(|v| v.y).max().unwrap();
+    let f_min = corners.iter().map(|v| v.f).min().unwrap();
+    let f_max = corners.iter().map(|v| v.f).max().unwrap();
+
+    // 👇 ここが Iterator 化の本体
+    (x_min..=x_max)
+        .flat_map(move |x| {
+            (y_min..=y_max).flat_map(move |y| {
+                (f_min..=f_max).map(move |f| SingleID { z, f, x, y })
+            })
+        })
+    .filter(move |id| {
+        let p: Coordinate = id.center();
+        center.distance(&p) <= radius + voxel_diag_half
+    })
 }
+
