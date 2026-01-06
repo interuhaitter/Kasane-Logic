@@ -4,13 +4,13 @@ use std::{fmt, u64};
 use crate::{
     error::Error,
     geometry::coordinate::Coordinate,
-    id::space_id::{
-        SpaceID,
+    segment::Segment,
+    spatial_id::{
+        SpatialId,
         constants::{F_MAX, F_MIN, MAX_ZOOM_LEVEL, XY_MAX},
         helpers,
         range::RangeID,
     },
-    segment::Segment,
 };
 
 /// SingleIDは標準的な空間 ID を表す型です。
@@ -414,7 +414,7 @@ impl SingleID {
     }
 }
 
-impl crate::id::space_id::SpaceID for SingleID {
+impl SpatialId for SingleID {
     /// このIDのズームレベルにおける最小の F インデックスを返す
     /// ```
     /// # use kasane_logic::id::space_id::single::SingleID;

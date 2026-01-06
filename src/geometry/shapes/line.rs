@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use crate::{
     error::Error,
     geometry::{constants::WGS84_A, coordinate::Coordinate, ecef::Ecef},
-    id::space_id::{constants::MAX_ZOOM_LEVEL, single::SingleID},
+    spatial_id::{constants::MAX_ZOOM_LEVEL, single::SingleID},
 };
 pub fn line(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = SingleID>, Error> {
     if z > MAX_ZOOM_LEVEL as u8 {

@@ -5,13 +5,13 @@ use std::{collections::btree_map::Range, fmt};
 use crate::{
     error::Error,
     geometry::coordinate::Coordinate,
-    id::space_id::{
-        SpaceID,
+    segment::Segment,
+    spatial_id::{
+        SpatialId,
         constants::{F_MAX, F_MIN, XY_MAX},
         helpers,
         single::SingleID,
     },
-    segment::Segment,
 };
 
 /// RangeIDは拡張された空間 ID を表す型です。
@@ -374,7 +374,7 @@ impl RangeID {
     }
 }
 
-impl SpaceID for RangeID {
+impl SpatialId for RangeID {
     /// このIDのズームレベルにおける最小の F インデックスを返す
     /// ```
     /// # use kasane_logic::id::space_id::range::RangeID;
@@ -742,4 +742,4 @@ impl SpaceID for RangeID {
 //             y: y_bitvec,
 //         }
 //     }
-// }
+//

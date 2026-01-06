@@ -3,7 +3,7 @@ use std::{cell::RefCell, collections::HashSet, f64::consts::PI, rc::Rc};
 use crate::{
     error::Error,
     geometry::{constants::WGS84_A, coordinate::Coordinate, ecef::Ecef},
-    id::space_id::{constants::MAX_ZOOM_LEVEL, single::SingleID},
+    spatial_id::{constants::MAX_ZOOM_LEVEL, single::SingleID},
 };
 pub fn triangle(
     z: u8,
