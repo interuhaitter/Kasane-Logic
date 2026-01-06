@@ -4,7 +4,6 @@
 //! 効率的なビット操作を提供します。
 
 use crate::id::space_id::constants::F_MAX;
-use crate::id::space_id::segment::Segment;
 use core::fmt;
 
 /// ビット列を用いて時空間IDの各次元の階層構造を管理する

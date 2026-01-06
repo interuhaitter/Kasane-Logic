@@ -7,11 +7,10 @@ use crate::{
     id::space_id::{
         SpaceID,
         constants::{F_MAX, F_MIN, MAX_ZOOM_LEVEL, XY_MAX},
-        encode::EncodeID,
         helpers,
         range::RangeID,
-        segment::Segment,
     },
+    segment::Segment,
 };
 
 /// SingleIDは標準的な空間 ID を表す型です。
@@ -861,21 +860,6 @@ impl crate::id::space_id::SpaceID for SingleID {
         }
 
         out
-    }
-}
-
-impl From<SingleID> for EncodeID {
-    ///`SingleID`を[`EncodeID`]に変換します。物理的な範囲に変化はありません。
-    fn from(id: SingleID) -> Self {
-        let f_bitvec = Segment { z: id.z, dim: id.f }.into();
-        let x_bitvec = Segment { z: id.z, dim: id.x }.into();
-        let y_bitvec = Segment { z: id.z, dim: id.y }.into();
-
-        EncodeID {
-            f: vec![f_bitvec],
-            x: vec![x_bitvec],
-            y: vec![y_bitvec],
-        }
     }
 }
 

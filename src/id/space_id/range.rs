@@ -3,17 +3,15 @@ use itertools::iproduct;
 use std::{collections::btree_map::Range, fmt};
 
 use crate::{
-    bit_vec::BitVec,
     error::Error,
     geometry::coordinate::Coordinate,
     id::space_id::{
         SpaceID,
         constants::{F_MAX, F_MIN, XY_MAX},
-        encode::EncodeID,
         helpers,
-        segment::Segment,
         single::SingleID,
     },
+    segment::Segment,
 };
 
 /// RangeIDは拡張された空間 ID を表す型です。
@@ -727,21 +725,21 @@ impl SpaceID for RangeID {
     }
 }
 
-impl From<RangeID> for EncodeID {
-    ///`SingleID`を[`EncodeID`]に変換します。物理的な範囲に変化はありません。
-    fn from(id: RangeID) -> Self {
-        let f_segment = Segment::<i64>::new(id.z, id.f);
-        let x_segment = Segment::<u64>::new(id.z, id.x);
-        let y_segment = Segment::<u64>::new(id.z, id.y);
+// impl From<RangeID> for EncodeID {
+//     ///`SingleID`を[`EncodeID`]に変換します。物理的な範囲に変化はありません。
+//     fn from(id: RangeID) -> Self {
+//         let f_segment = Segment::<i64>::new(id.z, id.f);
+//         let x_segment = Segment::<u64>::new(id.z, id.x);
+//         let y_segment = Segment::<u64>::new(id.z, id.y);
 
-        let f_bitvec: Vec<BitVec> = f_segment.iter().map(|f| (*f).into()).collect();
-        let x_bitvec: Vec<BitVec> = x_segment.iter().map(|x| (*x).into()).collect();
-        let y_bitvec: Vec<BitVec> = y_segment.iter().map(|y| (*y).into()).collect();
+//         let f_bitvec: Vec<BitVec> = f_segment.iter().map(|f| (*f).into()).collect();
+//         let x_bitvec: Vec<BitVec> = x_segment.iter().map(|x| (*x).into()).collect();
+//         let y_bitvec: Vec<BitVec> = y_segment.iter().map(|y| (*y).into()).collect();
 
-        EncodeID {
-            f: f_bitvec,
-            x: x_bitvec,
-            y: y_bitvec,
-        }
-    }
-}
+//         EncodeID {
+//             f: f_bitvec,
+//             x: x_bitvec,
+//             y: y_bitvec,
+//         }
+//     }
+// }
