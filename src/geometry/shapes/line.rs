@@ -2,7 +2,11 @@ use std::{collections::HashSet, f64};
 
 use crate::{
     error::Error,
-    geometry::{constants::WGS84_A, coordinate::Coordinate, ecef::Ecef},
+    geometry::{
+        constants::WGS84_A,
+        coordinate::Coordinate,
+        ecef::{self, Ecef},
+    },
     id::space_id::{constants::MAX_ZOOM_LEVEL, single::SingleID},
 };
 pub fn line(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = SingleID>, Error> {
@@ -49,6 +53,37 @@ pub fn line(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = 
     });
 
     Ok(iter)
+}
+
+pub fn line_new(
+    z: u8,
+    a: Coordinate,
+    b: Coordinate,
+) -> Result<impl Iterator<Item = SingleID>, Error> {
+    if z > MAX_ZOOM_LEVEL as u8 {
+        return Err(Error::ZOutOfRange { z });
+    }
+    let devide_num = 10_u16;
+    let ecef_a: Ecef = a.into();
+    let ecef_b: Ecef = b.into();
+    let mut coordinates = Vec::new();
+    for i in 0..=devide_num {
+        let t = i as f64 / devide_num as f64;
+        let x = ecef_a.as_x() * (1.0 - t) + ecef_b.as_x() * t;
+        let y = ecef_a.as_y() * (1.0 - t) + ecef_b.as_y() * t;
+        let z_pos = ecef_a.as_z() * (1.0 - t) + ecef_b.as_z() * t;
+        let coo: Coordinate = Ecef::new(x, y, z_pos).try_into()?;
+        coordinates.push(coo);
+    }
+    let mut voxels: Vec<SingleID> = Vec::new();
+    for pair in coordinates.windows(2) {
+        let start = pair[0];
+        let end = pair[1];
+        let line_iter = line_dda(z, start, end)?;
+        voxels.pop();
+        voxels.extend(line_iter);
+    }
+    Ok(voxels.into_iter())
 }
 
 fn coordinate_to_matrix(p: Coordinate, z: u8) -> [f64; 3] {
