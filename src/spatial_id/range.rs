@@ -413,152 +413,6 @@ impl SpatialId for RangeId {
         XY_MAX[self.z as usize]
     }
 
-    /// 指定したインデックス差 `by` に基づき、この [`RangeId`] を垂直上方向に動かします。
-    ///
-    /// # パラメータ
-    /// * `by` — インデックス差
-    ///
-    /// # バリデーション
-    /// - Fインデックスがのいずれかが範囲外になる場合は[`Error::FOutOfRange`]を返します
-    ///
-    /// 移動
-    /// ```
-    /// # use kasane_logic::id::space_id::range::RangeId;
-    /// # use kasane_logic::error::Error;
-    /// # use crate::kasane_logic::id::space_id::SpaceID;
-    /// let mut id = RangeId::new(5, [-10,-5], [8,9], [5,10]).unwrap();
-    /// assert_eq!(id.as_f(), [-10,-5]);
-    ///
-    /// let _ = id.move_up(4).unwrap();
-    /// assert_eq!(id.as_f(), [-6, -1]);
-    /// ```
-    ///
-    /// 範囲外の検知によるエラー
-    /// ```
-    /// # use kasane_logic::id::space_id::range::RangeId;
-    /// # use kasane_logic::error::Error;
-    /// # use crate::kasane_logic::id::space_id::SpaceID;
-    /// let mut id = RangeId::new(5, [-10,-5], [8,9], [5,10]).unwrap();
-    /// assert_eq!(id.as_f(), [-10,-5]);
-    ///
-    /// assert_eq!(id.move_up(50), Err(Error::FOutOfRange { z: 5, f: 40 }));
-    /// ```
-    ///
-    fn move_up(&mut self, by: u64) -> Result<(), Error> {
-        self.move_f(by as i64)
-    }
-
-    /// 指定したインデックス差 `by` に基づき、この [`RangeId`] を垂直下方向に動かします。
-    ///
-    /// # パラメータ
-    /// * `by` — インデックス差
-    ///
-    /// # バリデーション
-    /// - Fインデックスがのいずれかが範囲外になる場合は[`Error::FOutOfRange`]を返します
-    ///
-    /// 移動
-    /// ```
-    /// # use kasane_logic::id::space_id::range::RangeId;
-    /// # use kasane_logic::error::Error;
-    /// # use crate::kasane_logic::id::space_id::SpaceID;
-    /// let mut id = RangeId::new(5, [-10,-5], [8,9], [5,10]).unwrap();
-    /// assert_eq!(id.as_f(), [-10,-5]);
-    ///
-    /// let _ = id.move_down(4).unwrap();
-    /// assert_eq!(id.as_f(), [-14, -9]);
-    /// ```
-    ///
-    /// 範囲外の検知によるエラー
-    /// ```
-    /// # use kasane_logic::id::space_id::range::RangeId;
-    /// # use kasane_logic::error::Error;
-    /// # use crate::kasane_logic::id::space_id::SpaceID;
-    /// let mut id = RangeId::new(5, [-10,-5], [8,9], [5,10]).unwrap();
-    /// assert_eq!(id.as_f(), [-10,-5]);
-    ///
-    /// assert_eq!(id.move_down(50), Err(Error::FOutOfRange { z: 5, f: -60 }));
-    /// ```
-    ///
-    fn move_down(&mut self, by: u64) -> Result<(), Error> {
-        self.move_f(-(by as i64))
-    }
-
-    /// 指定したインデックス差 `by` に基づき、この [`RangeId`] を北方向に動かします。
-    ///
-    /// # パラメータ
-    /// * `by` — インデックス差
-    ///
-    /// # バリデーション
-    /// - Yインデックスが範囲外になる場合は[`Error::YOutOfRange`]を返します
-    ///
-    /// 移動
-    /// ```
-    /// # use kasane_logic::id::space_id::range::RangeId;
-    /// # use kasane_logic::error::Error;
-    /// # use crate::kasane_logic::id::space_id::SpaceID;
-    /// let mut id = RangeId::new(5, [-10,-5], [8,9], [5,10]).unwrap();
-    /// assert_eq!(id.as_y(), [5,10]);
-    ///
-    /// let _ = id.move_north(4).unwrap();
-    /// assert_eq!(id.as_y(), [1, 6]);
-    /// ```
-    ///
-    /// 範囲外の検知によるエラー
-    /// ```
-    /// # use kasane_logic::id::space_id::range::RangeId;
-    /// # use kasane_logic::error::Error;
-    /// # use crate::kasane_logic::id::space_id::SpaceID;
-    /// let mut id = RangeId::new(5, [-10,-5], [8,9], [5,10]).unwrap();
-    /// assert_eq!(id.as_y(), [5,10]);
-    ///
-    /// assert_eq!(id.move_north(50), Err(Error::YOutOfRange { z: 5, y: 0 }));
-    /// ```
-    fn move_north(&mut self, by: u64) -> Result<(), Error> {
-        self.move_y(-(by as i64))
-    }
-
-    /// 指定したインデックス差 `by` に基づき、この [`RangeId`] を南方向に動かします。
-    ///
-    /// # パラメータ
-    /// * `by` — インデックス差
-    ///
-    /// # バリデーション
-    /// - Yインデックスが範囲外になる場合は[`Error::YOutOfRange`]を返します
-    ///
-    /// 移動
-    /// ```
-    /// # use kasane_logic::id::space_id::range::RangeId;
-    /// # use kasane_logic::error::Error;
-    /// # use crate::kasane_logic::id::space_id::SpaceID;
-    /// let mut id = RangeId::new(5, [-10,-5], [8,9], [5,10]).unwrap();
-    /// assert_eq!(id.as_y(), [5,10]);
-    ///
-    /// let _ = id.move_south(4).unwrap();
-    /// assert_eq!(id.as_y(), [9, 14]);
-    /// ```
-    ///
-    /// 範囲外の検知によるエラー
-    /// ```
-    /// # use kasane_logic::id::space_id::range::RangeId;
-    /// # use kasane_logic::error::Error;
-    /// # use crate::kasane_logic::id::space_id::SpaceID;
-    /// let mut id = RangeId::new(5, [-10,-5], [8,9], [5,10]).unwrap();
-    /// assert_eq!(id.as_y(), [5,10]);
-    ///
-    /// assert_eq!(id.move_south(50), Err(Error::YOutOfRange { z: 5, y: 55 }));
-    /// ```
-    fn move_south(&mut self, by: u64) -> Result<(), Error> {
-        self.move_y(by as i64)
-    }
-
-    fn move_east(&mut self, by: u64) -> Result<(), Error> {
-        self.move_x(by as i64)
-    }
-
-    fn move_west(&mut self, by: u64) -> Result<(), Error> {
-        self.move_x(-(by as i64))
-    }
-
     fn move_f(&mut self, by: i64) -> Result<(), Error> {
         let min = self.min_f();
         let max = self.max_f();
@@ -582,50 +436,8 @@ impl SpatialId for RangeId {
         Ok(())
     }
 
-    fn move_x(&mut self, by: i64) -> Result<(), Error> {
-        if by >= 0 {
-            let byu = by as u64;
-            let max = self.max_xy();
-            let z = self.z;
-
-            let ns = self.x[0]
-                .checked_add(byu)
-                .ok_or(Error::XOutOfRange { x: u64::MAX, z })?;
-            let ne = self.x[1]
-                .checked_add(byu)
-                .ok_or(Error::XOutOfRange { x: u64::MAX, z })?;
-
-            if ns > max {
-                return Err(Error::XOutOfRange { x: ns, z });
-            }
-            if ne > max {
-                return Err(Error::XOutOfRange { x: ne, z });
-            }
-
-            self.x = [ns, ne];
-            Ok(())
-        } else {
-            let byu = (-by) as u64;
-            let max = self.max_xy();
-            let z = self.z;
-
-            let ns = self.x[0]
-                .checked_sub(byu)
-                .ok_or(Error::XOutOfRange { x: 0, z })?;
-            let ne = self.x[1]
-                .checked_sub(byu)
-                .ok_or(Error::XOutOfRange { x: 0, z })?;
-
-            if ns > max {
-                return Err(Error::XOutOfRange { x: ns, z });
-            }
-            if ne > max {
-                return Err(Error::XOutOfRange { x: ne, z });
-            }
-
-            self.x = [ns, ne];
-            Ok(())
-        }
+    fn move_x(&mut self, by: i64) {
+        todo!()
     }
 
     fn move_y(&mut self, by: i64) -> Result<(), Error> {
@@ -724,21 +536,14 @@ impl SpatialId for RangeId {
     }
 }
 
-// impl From<RangeId> for EncodeID {
-//     ///`SingleId`を[`EncodeID`]に変換します。物理的な範囲に変化はありません。
-//     fn from(id: RangeId) -> Self {
-//         let f_segment = Segment::<i64>::new(id.z, id.f);
-//         let x_segment = Segment::<u64>::new(id.z, id.x);
-//         let y_segment = Segment::<u64>::new(id.z, id.y);
-
-//         let f_bitvec: Vec<BitVec> = f_segment.iter().map(|f| (*f).into()).collect();
-//         let x_bitvec: Vec<BitVec> = x_segment.iter().map(|x| (*x).into()).collect();
-//         let y_bitvec: Vec<BitVec> = y_segment.iter().map(|y| (*y).into()).collect();
-
-//         EncodeID {
-//             f: f_bitvec,
-//             x: x_bitvec,
-//             y: y_bitvec,
-//         }
-//     }
-//
+impl From<SingleId> for RangeId {
+    ///`SingleId`を[`RangeId`]に変換します。表す物理的な範囲に変化はありません。
+    fn from(id: SingleId) -> Self {
+        RangeId {
+            z: id.z,
+            f: [id.f, id.f],
+            x: [id.x, id.x],
+            y: [id.y, id.y],
+        }
+    }
+}

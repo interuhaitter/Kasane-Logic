@@ -48,18 +48,9 @@ pub trait SpatialId {
     fn max_f(&self) -> i64;
     fn max_xy(&self) -> u64;
 
-    //WEBメルカトル法や高度の上限に来るとエラーを出す
-
-    //基礎的な方角への移動
-    fn move_up(&mut self, by: u64) -> Result<(), Error>;
-    fn move_down(&mut self, by: u64) -> Result<(), Error>;
-    fn move_north(&mut self, by: u64) -> Result<(), Error>;
-    fn move_south(&mut self, by: u64) -> Result<(), Error>;
-    fn move_east(&mut self, by: u64) -> Result<(), Error>;
-    fn move_west(&mut self, by: u64) -> Result<(), Error>;
     //各インデックスの移動
     fn move_f(&mut self, by: i64) -> Result<(), Error>;
-    fn move_x(&mut self, by: i64) -> Result<(), Error>;
+    fn move_x(&mut self, by: i64);
     fn move_y(&mut self, by: i64) -> Result<(), Error>;
 
     //中心点の座標を求める関数
@@ -67,4 +58,6 @@ pub trait SpatialId {
 
     //頂点をの座標を求める関数
     fn vertices(&self) -> [Coordinate; 8];
+
+    //EncodeIdの集合に変換するメゾット
 }
