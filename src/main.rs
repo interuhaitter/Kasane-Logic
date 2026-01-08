@@ -1,10 +1,13 @@
-use kasane_logic::geometry::{
-    coordinate::Coordinate,
-    shapes::line::{line, line_dda},
+use kasane_logic::{
+    geometry::{
+        coordinate::Coordinate,
+        shapes::line::{line, line_dda, line_new},
+    },
+    id::space_id::single::SingleID,
 };
 use rand::prelude::*;
-use std::fs::File;
 use std::io::Write;
+use std::{collections::HashSet, fs::File};
 
 const MIN_LAT: f64 = 20.0;
 const MAX_LAT: f64 = 46.0;
@@ -21,17 +24,31 @@ fn rondom_point(rng: &mut impl Rng) -> Coordinate {
     .unwrap()
 }
 
+fn benchmark(z: u8, a: Coordinate, b: Coordinate) -> Result<(), Box<dyn std::error::Error>> {
+    let old_line: HashSet<SingleID> = line(z, a, b)?.collect();
+    let new_line: HashSet<SingleID> = line_new(z, a, b)?.collect();
+    let common_count = old_line.intersection(&new_line).count();
+    let only_in_old_count = old_line.difference(&new_line).count();
+    let only_in_new_count = new_line.difference(&old_line).count();
+    print!(
+        "共通{},旧のみ{},新のみ{}",
+        common_count, only_in_old_count, only_in_new_count
+    );
+    Ok(())
+}
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut file = File::create("output.txt")?;
     let tokyo = Coordinate::new(35.681382, 139.76608399999998, 0.0)?;
     let nagoya = Coordinate::new(35.1706431, 136.8816945, 100.0)?;
     let yokohama = Coordinate::new(35.4660694, 139.6226196, 100.0)?;
-    let (z, start, goal) = (20, nagoya, tokyo);
-    let iter = line_dda(z, start, goal)?;
-    for id in iter {
-        // SingleIDの内容を一行ずつ書き込む
-        writeln!(file, "{},", id)?;
-    }
-    println!("{},{}", start.to_id(z), goal.to_id(z));
-    Ok(println!("結果を output.txt に保存しました 。"))
+    let (z, start, goal) = (23, tokyo, yokohama);
+    // let iter = line_dda(z, start, goal)?;
+    // for id in iter {
+    //     // SingleIDの内容を一行ずつ書き込む
+    //     writeln!(file, "{},", id)?;
+    // }
+    // println!("{},{}", start.to_id(z), goal.to_id(z));
+    // Ok(println!("結果を output.txt に保存しました 。"))
+    benchmark(z, start, goal);
+    Ok(())
 }

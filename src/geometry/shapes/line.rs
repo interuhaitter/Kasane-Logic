@@ -63,7 +63,7 @@ pub fn line_new(
     if z > MAX_ZOOM_LEVEL as u8 {
         return Err(Error::ZOutOfRange { z });
     }
-    let devide_num = 10_u16;
+    let devide_num = 200_u16;
     let ecef_a: Ecef = a.into();
     let ecef_b: Ecef = b.into();
     let mut coordinates = Vec::new();
@@ -178,63 +178,38 @@ pub fn line_dda(
     } else {
         (vp1[other_flag_2] - vp1[other_flag_2].floor()) * d_o2 - tm
     };
-    let max_steps = (i2 - i1).abs() as u64;
+    let max_steps = ((i2 - i1).abs() + (j2 - j1).abs() + (k2 - k1).abs()) as usize;
     let mut voxels: Vec<SingleID> = Vec::new();
-    voxels.push(SingleID::new(z, i1, j1 as u64, k1 as u64)?);
-    let mut current = [i1, j1, k1];
-    let sign_i = (vp2[max_flag] - vp1[max_flag]).signum() as i64;
-    let sign_j = (vp2[other_flag_1] - vp1[other_flag_1]).signum() as i64;
-    let sign_k = (vp2[other_flag_2] - vp1[other_flag_2]).signum() as i64;
     let pull_index = [
         (3 - max_flag) % 3,
         (3 - other_flag_2) % 3,
         (3 - other_flag_1) % 3,
     ];
-    for tm_int in 0..max_steps {
-        if to1 > to2 {
-            if tm_int as f64 > to2 {
-                to2 += d_o2;
-                current[2] += sign_k;
-                voxels.push(SingleID::new(
-                    z,
-                    current[pull_index[0]] + offsets_int[0],
-                    (current[pull_index[1]] + offsets_int[1]) as u64,
-                    (current[pull_index[2]] + offsets_int[2]) as u64,
-                )?);
-                if (tm_int as f64) > to1 {
-                    to1 += d_o1;
-                    current[1] += sign_j;
-                    voxels.push(SingleID::new(
-                        z,
-                        current[pull_index[0]] + offsets_int[0],
-                        (current[pull_index[1]] + offsets_int[1]) as u64,
-                        (current[pull_index[2]] + offsets_int[2]) as u64,
-                    )?);
-                }
-            }
+    let mut current = [i1, j1, k1];
+    voxels.push(SingleID::new(
+        z,
+        current[pull_index[0]] + offsets_int[0],
+        (current[pull_index[1]] + offsets_int[1]) as u64,
+        (current[pull_index[2]] + offsets_int[2]) as u64,
+    )?);
+    let sign_i = (vp2[max_flag] - vp1[max_flag]).signum() as i64;
+    let sign_j = (vp2[other_flag_1] - vp1[other_flag_1]).signum() as i64;
+    let sign_k = (vp2[other_flag_2] - vp1[other_flag_2]).signum() as i64;
+    let mut counter = 0;
+    let mut tm_int = 0;
+    let mut min_wall = 0.0;
+    while voxels.len() - 1 < max_steps {
+        min_wall = (tm_int as f64).min(to1).min(to2);
+        if min_wall == tm_int as f64 {
+            tm_int += 1;
+            current[0] += sign_i;
+        } else if min_wall == to1 {
+            to1 += d_o1;
+            current[1] += sign_j;
         } else {
-            if tm_int as f64 > to1 {
-                to1 += d_o1;
-                current[1] += sign_j;
-                voxels.push(SingleID::new(
-                    z,
-                    current[pull_index[0]] + offsets_int[0],
-                    (current[pull_index[1]] + offsets_int[1]) as u64,
-                    (current[pull_index[2]] + offsets_int[2]) as u64,
-                )?);
-                if (tm_int as f64) > to2 {
-                    to2 += d_o2;
-                    current[2] += sign_k;
-                    voxels.push(SingleID::new(
-                        z,
-                        current[pull_index[0]] + offsets_int[0],
-                        (current[pull_index[1]] + offsets_int[1]) as u64,
-                        (current[pull_index[2]] + offsets_int[2]) as u64,
-                    )?);
-                }
-            }
+            to2 += d_o2;
+            current[2] += sign_k;
         }
-        current[0] += sign_i;
         voxels.push(SingleID::new(
             z,
             current[pull_index[0]] + offsets_int[0],
