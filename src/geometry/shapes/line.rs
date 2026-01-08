@@ -63,7 +63,7 @@ pub fn line_new(
     if z > MAX_ZOOM_LEVEL as u8 {
         return Err(Error::ZOutOfRange { z });
     }
-    let devide_num = 200_u16;
+    let devide_num = 20_u16;
     let ecef_a: Ecef = a.into();
     let ecef_b: Ecef = b.into();
     let mut coordinates = Vec::new();
@@ -195,10 +195,11 @@ pub fn line_dda(
     let sign_i = (vp2[max_flag] - vp1[max_flag]).signum() as i64;
     let sign_j = (vp2[other_flag_1] - vp1[other_flag_1]).signum() as i64;
     let sign_k = (vp2[other_flag_2] - vp1[other_flag_2]).signum() as i64;
-    let mut counter = 0;
+    let mut counter = 1_usize;
     let mut tm_int = 0;
     let mut min_wall = 0.0;
-    while voxels.len() - 1 < max_steps {
+
+    while counter <= max_steps {
         min_wall = (tm_int as f64).min(to1).min(to2);
         if min_wall == tm_int as f64 {
             tm_int += 1;
@@ -216,6 +217,7 @@ pub fn line_dda(
             (current[pull_index[1]] + offsets_int[1]) as u64,
             (current[pull_index[2]] + offsets_int[2]) as u64,
         )?);
+        counter += 1;
     }
     if current != [i2, j2, k2] {
         println!("失敗")
