@@ -3,9 +3,6 @@ use crate::{
     spatial_id::{SpatialId, helpers::Dimension, single::SingleId},
 };
 
-/// ===============================
-/// voxel 1辺の長さ（m）
-/// ===============================
 pub fn voxel_length(z: u8, axis: Dimension) -> f64 {
     let n = 2f64.powi(z as i32);
 
@@ -17,11 +14,8 @@ pub fn voxel_length(z: u8, axis: Dimension) -> f64 {
     }
 }
 
-pub fn sphere<'a>(
-    z: u8,
-    center: &'a Coordinate,
-    radius: f64,
-) -> impl Iterator<Item = SingleId> + 'a {
+/// 指定された中心点と半径で定義される球状領域を覆う空間 ID を列挙する。
+pub fn sphere(z: u8, center: &Coordinate, radius: f64) -> impl Iterator<Item = SingleId> {
     let voxel_diag_half = voxel_length(z, Dimension::X) * 3.0_f64.sqrt() / 2.0;
     let center_ecef: Ecef = (*center).into();
 

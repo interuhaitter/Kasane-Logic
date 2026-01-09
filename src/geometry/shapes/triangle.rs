@@ -5,6 +5,8 @@ use crate::{
     geometry::{constants::WGS84_A, coordinate::Coordinate, ecef::Ecef},
     spatial_id::{constants::MAX_ZOOM_LEVEL, single::SingleId},
 };
+
+/// 指定された 3 点で構成される三角形領域を覆う空間 ID を列挙する。
 pub fn triangle(
     z: u8,
     a: Coordinate,

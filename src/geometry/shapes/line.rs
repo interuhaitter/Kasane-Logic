@@ -5,6 +5,8 @@ use crate::{
     geometry::{constants::WGS84_A, coordinate::Coordinate, ecef::Ecef},
     spatial_id::{constants::MAX_ZOOM_LEVEL, single::SingleId},
 };
+
+/// 指定された 2 点で構成される直線を覆う空間 ID を列挙する。
 pub fn line(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = SingleId>, Error> {
     if z > MAX_ZOOM_LEVEL as u8 {
         return Err(Error::ZOutOfRange { z });
