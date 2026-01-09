@@ -35,7 +35,7 @@ impl fmt::Debug for Ecef {
 }
 
 impl Ecef {
-    /// 指定された XYZ 成分から `Ecef` を生成します。
+    /// 指定された XYZ 成分から [Ecef]型 を生成します。
     ///
     /// 各値はメートル単位で指定します。
     pub fn new(x: f64, y: f64, z: f64) -> Ecef {

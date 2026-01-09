@@ -9,7 +9,6 @@ use crate::{
     spatial_id::single::SingleId,
 };
 
-/// `Coordinate` 型は、緯度・経度・高度によって点の位置を表現するための型です。
 /// 内部的には下記のような構造体として定義されており、各フィールドを非公開とすることで、
 /// 空間 ID 上で扱える座標に対する制約が常に満たされるようにしています。
 ///
@@ -54,6 +53,15 @@ impl Coordinate {
     /// # 戻り値
     /// * 有効な値が指定された場合は `Ok(Coordinate)` を返します
     /// * いずれかの値が範囲外の場合は、対応する `Error` を返します
+    ///
+    /// ```
+    /// # use kasane_logic::geometry::coordinate::Coordinate;
+    /// let coord = Coordinate::new(35.0, 139.0, 10.0).unwrap();
+    ///
+    /// assert_eq!(coord.as_latitude(), 35.0);
+    /// assert_eq!(coord.as_longitude(), 139.0);
+    /// assert_eq!(coord.as_altitude(), 10.0);
+    /// ```
     pub fn new(latitude: f64, longitude: f64, altitude: f64) -> Result<Self, Error> {
         if !(-85.0511..=85.0511).contains(&latitude) {
             return Err(Error::LatitudeOutOfRange { latitude });
@@ -94,21 +102,33 @@ impl Coordinate {
     }
 
     /// 緯度を返します。
+    ///
+    /// 返される値は度数法（degree）で表され、
+    /// 常にWEBメルカトル上で扱える有効な範囲（-85.0511 〜 85.0511）内に収まります。
     pub fn as_latitude(&self) -> f64 {
         self.latitude
     }
 
-    ///経度を返します。
+    /// 経度を返します。
+    ///
+    /// 返される値は度数法（degree）で表され、
+    /// 常に -180.0 〜 180.0 の範囲内に収まります。
     pub fn as_longitude(&self) -> f64 {
         self.longitude
     }
 
-    ///高度を返します。
+    /// 高度を返します。
+    ///
+    /// される値はメートル（m）で表され、
+    /// 常に`-33,554,432.0 ..= 33,554,432.0`の範囲内にに収まります。
     pub fn as_altitude(&self) -> f64 {
         self.altitude
     }
 
     /// 緯度を設定します。
+    ///
+    /// 指定された値が有効な範囲外の場合、この関数はエラーを返し、
+    /// 内部の値は変更されません。
     pub fn set_latitude(&mut self, latitude: f64) -> Result<(), Error> {
         if !(-85.0511..=85.0511).contains(&latitude) {
             return Err(Error::LatitudeOutOfRange { latitude });
@@ -118,6 +138,9 @@ impl Coordinate {
     }
 
     /// 経度を設定します。
+    ///
+    /// 指定された値が有効な範囲外の場合、この関数はエラーを返し、
+    /// 内部の値は変更されません。
     pub fn set_longitude(&mut self, longitude: f64) -> Result<(), Error> {
         if !(-180.0..=180.0).contains(&longitude) {
             return Err(Error::LongitudeOutOfRange { longitude });
@@ -127,6 +150,10 @@ impl Coordinate {
     }
 
     /// 高度を設定します。
+    ///
+    /// 単位はメートル（m）です。
+    /// 指定された値が有効な範囲外の場合、この関数はエラーを返し、
+    /// 内部の値は変更されません。
     pub fn set_altitude(&mut self, altitude: f64) -> Result<(), Error> {
         if !(-33_554_432.0..=33_554_432.0).contains(&altitude) {
             return Err(Error::AltitudeOutOfRange { altitude });
@@ -135,30 +162,28 @@ impl Coordinate {
         Ok(())
     }
 
-    /// この座標を、指定されたズームレベルに対応する `SingleId` に変換します。
+    /// この座標を、指定されたズームレベルに対応する [SingleId] に変換します。
     ///
     /// 緯度・経度・高度をそれぞれ空間 ID の各成分（`x`, `y`, `f`）へ変換し、
-    /// ズームレベル `z` を含む `SingleId` を生成します。
+    /// ズームレベル `z` を含む [SingleId] を生成します。
     ///
     /// # 引数
     /// * `z` - 空間 ID のズームレベル
     ///
     /// # 戻り値
-    /// * 指定されたズームレベルに対応する `SingleId`
+    /// * 指定されたズームレベルに対応する [SingleId]
     pub fn to_single_id(&self, z: u8) -> SingleId {
         let lat = self.latitude;
         let lon = self.longitude;
         let alt = self.altitude;
 
-        // ---- 高度 h -> f (Python の h_to_f を Rust に移植) ----
-        let factor = 2_f64.powi(z as i32 - 25); // 2^(z-25)
+        //Z=25のとき高さはちょうど1m
+        let factor = 2_f64.powi(z as i32 - 25);
         let f = (factor * alt).floor() as i64;
 
-        // ---- 経度 lon -> x ----
         let n = 2u64.pow(z as u32) as f64;
         let x = ((lon + 180.0) / 360.0 * n).floor() as u64;
 
-        // ---- 緯度 lat -> y (Web Mercator) ----
         let lat_rad = lat.to_radians();
         let y = ((1.0 - (lat_rad.tan() + 1.0 / lat_rad.cos()).ln() / std::f64::consts::PI) / 2.0
             * n)
@@ -167,7 +192,19 @@ impl Coordinate {
         SingleId { z, f, x, y }
     }
 
-    ///Coordinate型同士の距離をメートル単位で求める関数
+    /// 他の [`Coordinate`] との距離をメートル単位で返します。
+    ///
+    /// この関数は、両座標を地心直交座標系（ECEF）へ変換したうえで、
+    /// それらのユークリッド距離を計算します。
+    ///
+    /// * 単位はメートル（m）です
+    /// * WGS84 楕円体を前提とした近似距離となります
+    ///
+    /// # 引数
+    /// * `other` - 距離を計算する対象の座標
+    ///
+    /// # 戻り値
+    /// * 2 点間の距離（メートル）
     pub fn distance(&self, other: &Coordinate) -> f64 {
         let e1: Ecef = (*self).into();
         let e2: Ecef = (*other).into();
@@ -197,7 +234,7 @@ impl From<Coordinate> for Ecef {
     }
 }
 
-/// `Coordinate` の既定値を返します。
+/// [Coordinate] の既定値を返します。
 ///
 /// 緯度・経度・高度のすべてが `0.0` に設定された座標
 ///（赤道・本初子午線上、高度 0）を表します。

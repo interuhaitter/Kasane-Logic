@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 pub mod encode;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

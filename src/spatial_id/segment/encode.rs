@@ -1,8 +1,8 @@
 use std::fmt;
 use std::fmt::Display;
 
-use crate::segment::Segment;
 use crate::spatial_id::constants::MAX_ZOOM_LEVEL;
+use crate::spatial_id::segment::Segment;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct EncodeSegment([u8; EncodeSegment::ARRAY_LENGTH]);

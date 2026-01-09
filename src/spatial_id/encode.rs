@@ -1,4 +1,4 @@
-use crate::segment::encode::EncodeSegment;
+use crate::spatial_id::segment::encode::EncodeSegment;
 
 pub struct EncodeId {
     f: EncodeSegment,

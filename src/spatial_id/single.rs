@@ -4,7 +4,6 @@ use std::{fmt, u64};
 use crate::{
     error::Error,
     geometry::{coordinate::Coordinate, ecef::Ecef},
-    segment::Segment,
     spatial_id::{
         SpatialId,
         constants::{F_MAX, F_MIN, MAX_ZOOM_LEVEL, XY_MAX},
