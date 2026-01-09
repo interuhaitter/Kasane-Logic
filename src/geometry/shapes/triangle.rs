@@ -3,14 +3,16 @@ use std::{cell::RefCell, collections::HashSet, f64::consts::PI, rc::Rc};
 use crate::{
     error::Error,
     geometry::{constants::WGS84_A, coordinate::Coordinate, ecef::Ecef},
-    id::space_id::{constants::MAX_ZOOM_LEVEL, single::SingleID},
+    spatial_id::{constants::MAX_ZOOM_LEVEL, single::SingleId},
 };
+
+/// 指定された 3 点で構成される三角形領域を覆う空間 ID を列挙する。
 pub fn triangle(
     z: u8,
     a: Coordinate,
     b: Coordinate,
     c: Coordinate,
-) -> Result<impl Iterator<Item = SingleID>, Error> {
+) -> Result<impl Iterator<Item = SingleId>, Error> {
     if z > MAX_ZOOM_LEVEL as u8 {
         return Err(Error::ZOutOfRange { z });
     }
@@ -73,7 +75,7 @@ pub fn triangle(
                 )
             };
 
-            if let Ok(voxel_id) = Ecef::new(x, y, z_pos).to_id(z) {
+            if let Ok(voxel_id) = Ecef::new(x, y, z_pos).to_single_id(z) {
                 let mut borrowed = seen.borrow_mut();
                 if borrowed.insert(voxel_id.clone()) {
                     Some(voxel_id)

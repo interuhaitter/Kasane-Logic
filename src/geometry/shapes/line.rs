@@ -3,9 +3,11 @@ use std::f64;
 use crate::{
     error::Error,
     geometry::{coordinate::Coordinate, ecef::Ecef},
-    id::space_id::{constants::MAX_ZOOM_LEVEL, single::SingleID},
+    spatial_id::{constants::MAX_ZOOM_LEVEL, single::SingleId},
 };
-pub fn line(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = SingleID>, Error> {
+
+/// 指定された 2 点で構成される直線を覆う空間 ID を列挙する。
+pub fn line(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = SingleId>, Error> {
     if z > MAX_ZOOM_LEVEL as u8 {
         return Err(Error::ZOutOfRange { z });
     }
@@ -15,12 +17,11 @@ pub fn line(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = 
     let dy = ecef_a.as_y() - ecef_b.as_y();
     let dz = ecef_a.as_z() - ecef_b.as_z();
     let distance = (dx * dx + dy * dy + dz * dz).sqrt();
-    let (v1, v2) = (a.to_id(z), b.to_id(z));
+    let (v1, v2) = (a.to_single_id(z), b.to_single_id(z));
     let diff = ((v1.as_f() - v2.as_f()).abs()
         + (v1.as_x() as i64 - v2.as_x() as i64).abs()
-        + (v1.as_y() as i64 - v2.as_y() as i64).abs()) as f64; //(dif * 2_f64.powi(24 - z as i32) / 10.0).floor() as u16;
+        + (v1.as_y() as i64 - v2.as_y() as i64).abs()) as f64;
     let devide_num = 5 + (diff / 120.0 + distance / 2000.0).floor() as u16;
-    println!("内分{}回", devide_num);
     let mut coordinates = Vec::new();
     for i in 0..=devide_num {
         let t = i as f64 / devide_num as f64;
@@ -30,7 +31,7 @@ pub fn line(z: u8, a: Coordinate, b: Coordinate) -> Result<impl Iterator<Item = 
         let coo: Coordinate = Ecef::new(x, y, z_pos).try_into()?;
         coordinates.push(coo);
     }
-    let mut voxels: Vec<SingleID> = Vec::new();
+    let mut voxels: Vec<SingleId> = Vec::new();
     for pair in coordinates.windows(2) {
         let start = pair[0];
         let end = pair[1];
@@ -46,14 +47,13 @@ fn coordinate_to_matrix(p: Coordinate, z: u8) -> [f64; 3] {
     let lon = p.as_longitude();
     let alt = p.as_altitude();
 
-    // ---- 高度 h -> f (Python の h_to_f を Rust に移植) ----
-    let factor = 2_f64.powi(z as i32 - 25); // 空間idの高さはz=25でちょうど1mになるように定義されている
+    // 空間idの高さはz=25でちょうど1mになるように定義されている
+    let factor = 2_f64.powi(z as i32 - 25);
     let f = factor * alt;
-    // ---- 経度 lon -> x ----
+
     let n = 2u64.pow(z as u32) as f64;
     let x = (lon + 180.0) / 360.0 * n;
 
-    // ---- 緯度 lat -> y (Web Mercator) ----
     let lat_rad = lat.to_radians();
     let y = (1.0 - (lat_rad.tan() + 1.0 / lat_rad.cos()).ln() / std::f64::consts::PI) / 2.0 * n;
     [f, x, y]
@@ -63,7 +63,7 @@ pub fn line_dda(
     z: u8,
     a: Coordinate,
     b: Coordinate,
-) -> Result<impl Iterator<Item = SingleID>, Error> {
+) -> Result<impl Iterator<Item = SingleId>, Error> {
     if z > MAX_ZOOM_LEVEL as u8 {
         return Err(Error::ZOutOfRange { z });
     }
@@ -134,14 +134,14 @@ pub fn line_dda(
         (vp1[other_flag_2] - vp1[other_flag_2].floor()) * d_o2 - tm
     };
     let max_steps = ((i2 - i1).abs() + (j2 - j1).abs() + (k2 - k1).abs()) as usize;
-    let mut voxels: Vec<SingleID> = Vec::new();
+    let mut voxels: Vec<SingleId> = Vec::new();
     let pull_index = [
         (3 - max_flag) % 3,
         (3 - other_flag_2) % 3,
         (3 - other_flag_1) % 3,
     ];
     let mut current = [i1, j1, k1];
-    voxels.push(SingleID::new(
+    voxels.push(SingleId::new(
         z,
         current[pull_index[0]] + offsets_int[0],
         (current[pull_index[1]] + offsets_int[1]) as u64,
@@ -152,7 +152,7 @@ pub fn line_dda(
     let sign_k = (vp2[other_flag_2] - vp1[other_flag_2]).signum() as i64;
     let mut counter = 1_usize;
     let mut tm_int = 0;
-    let mut min_wall = 0.0;
+    let mut min_wall;
 
     while counter <= max_steps {
         min_wall = (tm_int as f64).min(to1).min(to2);
@@ -166,7 +166,7 @@ pub fn line_dda(
             to2 += d_o2;
             current[2] += sign_k;
         }
-        voxels.push(SingleID::new(
+        voxels.push(SingleId::new(
             z,
             current[pull_index[0]] + offsets_int[0],
             (current[pull_index[1]] + offsets_int[1]) as u64,
@@ -174,9 +174,6 @@ pub fn line_dda(
         )?);
         counter += 1;
     }
-    // if current != [i2, j2, k2] {
-    //     println!("失敗")
-    // }
     let iter = voxels.into_iter();
     Ok(iter)
 }
