@@ -141,12 +141,14 @@ pub fn line_dda(
         (3 - other_flag_1) % 3,
     ];
     let mut current = [i1, j1, k1];
-    voxels.push(SingleId::new(
-        z,
-        current[pull_index[0]] + offsets_int[0],
-        (current[pull_index[1]] + offsets_int[1]) as u64,
-        (current[pull_index[2]] + offsets_int[2]) as u64,
-    )?);
+    voxels.push(unsafe {
+        SingleId::uncheck_new(
+            z,
+            current[pull_index[0]] + offsets_int[0],
+            (current[pull_index[1]] + offsets_int[1]) as u64,
+            (current[pull_index[2]] + offsets_int[2]) as u64,
+        )
+    });
     let sign_i = (vp2[max_flag] - vp1[max_flag]).signum() as i64;
     let sign_j = (vp2[other_flag_1] - vp1[other_flag_1]).signum() as i64;
     let sign_k = (vp2[other_flag_2] - vp1[other_flag_2]).signum() as i64;
@@ -166,12 +168,14 @@ pub fn line_dda(
             to2 += d_o2;
             current[2] += sign_k;
         }
-        voxels.push(SingleId::new(
-            z,
-            current[pull_index[0]] + offsets_int[0],
-            (current[pull_index[1]] + offsets_int[1]) as u64,
-            (current[pull_index[2]] + offsets_int[2]) as u64,
-        )?);
+        voxels.push(unsafe {
+            SingleId::uncheck_new(
+                z,
+                current[pull_index[0]] + offsets_int[0],
+                (current[pull_index[1]] + offsets_int[1]) as u64,
+                (current[pull_index[2]] + offsets_int[2]) as u64,
+            )
+        });
         counter += 1;
     }
     let iter = voxels.into_iter();
