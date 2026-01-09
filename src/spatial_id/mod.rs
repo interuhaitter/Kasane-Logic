@@ -65,5 +65,5 @@ pub trait SpatialId {
     fn vertices(&self) -> [Coordinate; 8];
 
     //EncodeIdの集合に変換するメゾット
-    fn to_encode_id(&self) -> impl Iterator<Item = EncodeId> + '_;
+    fn encode(&self) -> impl Iterator<Item = EncodeId> + '_;
 }

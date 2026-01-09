@@ -650,7 +650,7 @@ impl SpatialId for SingleId {
         out
     }
 
-    fn to_encode_id(&self) -> impl Iterator<Item = EncodeId> + '_ {
+    fn encode(&self) -> impl Iterator<Item = EncodeId> + '_ {
         todo!();
         std::iter::empty()
     }
